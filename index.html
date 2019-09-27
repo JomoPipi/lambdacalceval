@@ -16,7 +16,7 @@
         <div style="text-align: left;"> 
             <center> Evaluate some λ Calculus. </center> <br>
             Variable names can only consist of one letter.
-            The expression <code>ab</code> will represent
+            The expression <code>a b</code> will represent
             the function <code>a</code> applied to <code>b</code>.
             The lambda symbol can be written as
             <code>\</code> or <code>λ</code>.
@@ -46,9 +46,18 @@
         */
         function F(code) {
             console.log(code)
-            const S = code.replace(/ /g,'')
+            const s = code.replace(/ /g,'')
             const lambda = '\λ'
-            return S
+            const i = [...s].findIndex((c,i) => c==='(' && '\\λ'.includes(s[i+1]))
+            if (i < 0) return s
+
+            // find index of matching closing p
+            // if character after that is a letter, apply it
+            // if character after that is a lambda symbol, go until the end
+            // if the character after that is an opening p, go until the matching p
+            // recurse
+
+            return s + ", i = " + i
         }
     </script>
 </body>
