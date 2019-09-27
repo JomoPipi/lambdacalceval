@@ -18,7 +18,7 @@
             Variable names can only consist of one letter.
             The expression <code>a b</code> will represent
             the function <code>a</code> applied to <code>b</code>.
-            The lambda symbol can be written as
+            The lambda symbol can be written as 
             <code>\</code> or <code>λ</code>.
         </div> 
         
@@ -46,11 +46,25 @@
         */
         function F(code) {
             console.log(code)
-            const s = code.replace(/ /g,'')
+            const s = code.replace(/ /g,''), l = s.length
             const lambda = '\λ'
             const i = [...s].findIndex((c,i) => c==='(' && '\\λ'.includes(s[i+1]))
+            console.log('i =',i)
             if (i < 0) return s
+            console.log('i =',i)
+            const j = [...s,1].findIndex((c,j,t) => {
+                if (j <= i) return;
+                t[l] += ({')':-1,'(':1})[c]||0
+                if (!t[l]) return true
+            })
+            const k = [...s].findIndex((c,k) => k > i && c === '.')
+            const body = s.slice(k+1,j)
+            console.log('k =',k)
+            if (/[a-zA-Z]/.test(s[j+1])) {
+                
+            }
 
+            console.log('s,i,j =',s,i,j)
             // find index of matching closing p
             // if character after that is a letter, apply it
             // if character after that is a lambda symbol, go until the end
