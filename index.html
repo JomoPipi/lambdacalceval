@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title> Lambda Calculus Evaluator </title>
+    <style>
+        code {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body style="background-color:#ccc;">
+    <center style="margin: 20%;">
+        <div style="text-align: left;"> 
+            <center> Evaluate some λ Calculus. </center> <br>
+            Variable names can only consist of one letter.
+            The expression <code>ab</code> will represent
+            the function <code>a</code> applied to <code>b</code>.
+            The lambda symbol can be written as
+            <code>\</code> or <code>λ</code>.
+        </div> 
+        
+        <input type="text" id="code"
+            style="width:60vw;" style="width:60vw;">
+        <input type="button" value="go" onclick="
+            const D = x => document.getElementById(x)
+            D('output').innerHTML = 'ß-reduction in process...'
+            setTimeout(_ => (
+                D('output').innerHTML = F(D('code').value),
+                D('code').value = ''),
+                300 + Math.random()*200|0)
+        ">
+        <div style="margin:10%;">output:</div>
+        <div id="output"></div>
+    </center>
+    <script>
+        /*
+            Maybe do uncurrying trick?
+            We look for the first λ with 
+            an opening parenthesis to the left of it,
+            we find the value that needs to be applied to the function,
+            apply it, and continue the reduction recursively.
+            If we find no parenthesis, we can reduce no further.
+        */
+        function F(code) {
+            console.log(code)
+            const S = code.replace(/ /g,'')
+            const lambda = '\λ'
+            return S
+        }
+    </script>
+</body>
+</html>
