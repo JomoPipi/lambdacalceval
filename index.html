@@ -27,9 +27,8 @@
         <input type="button" value="go" onclick="
             const D = x => document.getElementById(x)
             D('output').innerHTML = 'ß-reduction in process...'
-            setTimeout(_ => (
+            setTimeout(_ => 
                 D('output').innerHTML = F(D('code').value),
-                D('code').value = ''),
                 300 + Math.random()*200|0)
         ">
         <div style="margin:10%;">output:</div>
@@ -45,33 +44,70 @@
             If we find no parenthesis, we can reduce no further.
         */
         function F(code) {
-            console.log(code)
-            const s = code.replace(/ /g,''), l = s.length
-            const lambda = '\λ'
-            const i = [...s].findIndex((c,i) => c==='(' && '\\λ'.includes(s[i+1]))
-            console.log('i =',i)
-            if (i < 0) return s
-            console.log('i =',i)
-            const j = [...s,1].findIndex((c,j,t) => {
-                if (j <= i) return;
-                t[l] += ({')':-1,'(':1})[c]||0
-                if (!t[l]) return true
-            })
-            const k = [...s].findIndex((c,k) => k > i && c === '.')
-            const body = s.slice(k+1,j)
-            console.log('k =',k)
-            if (/[a-zA-Z]/.test(s[j+1])) {
+            const s = uncurryString(code.replace(/ /g,'')), l = s.length;
+            
+            // nice realization: we can only apply functions when there's parenthesis
+            return (function f(s) {
+                if (!s.includes('(')) return s
                 
-            }
+                const terms = (s => 
+                    [...s].reduce(([r,x,y],v,i) => {
+                        const a = v==='(', b = v===')', c = x===1
+                        if (v==='λ' && x === 0 && !y) { r.push(''); y=1 }
+                        if (y) { r[r.length-1] += v; return [r,x,y] }
+                        if (x > 0) { 
+                            if (!(b&&c)) r[r.length-1] += v
+                            return [r, x + (({')':-1,'(':1})[v]||0)] 
+                        }
+                        if (a) return [[...r,''],x+1]
+                        return [[...r,v],x]
+                    },[[],0,0])[0]
+                )(s)
 
-            console.log('s,i,j =',s,i,j)
-            // find index of matching closing p
-            // if character after that is a letter, apply it
-            // if character after that is a lambda symbol, go until the end
-            // if the character after that is an opening p, go until the matching p
-            // recurse
+                console.log(terms)
 
-            return s + ", i = " + i
+                const [a,b] = terms.splice(0,2)
+                
+                console.log('a,b =',a,b)
+
+                if (a[0]!=='λ') return '(' + [a,b,...terms].map(f).join`)(` + ')'
+                
+                // first, rename variables as needed
+
+                const applied = a.slice(3).replace(new RegExp(a[1],"g"),b)
+
+                console.log('applied =',applied)
+
+            })(s)
+
+            // const i = [...s].findIndex((c,i) => c==='(' && 'λ'===s[i+1])
+
+            // if (i < 0) return s
+            // const j = [...s,1].findIndex((c,j,t) => {
+            //     if (j <= i) return;
+            //     t[l] += ({')':-1,'(':1})[c]||0
+            //     if (!t[l]) return true
+            // })
+            // const k = [...s].findIndex((c,k) => k > i && c === '.')
+            // const arg = s.slice(i+2,i+3), body = s.slice(k+1,j)
+            // console.log('arg,body =',arg,body)
+            // if (/[a-zA-Z]/.test(s[j+1])) {
+                
+            // }
+
+            // console.log('s,i,j =',s,i,j)
+            // // find index of matching closing p
+            // // if character after that is a letter, apply it
+            // // if character after that is a lambda symbol, go until the end
+            // // if the character after that is an opening p, go until the matching p
+            // // recurse
+
+            return s
+        }
+        function uncurryString(s) {
+            return [...s.replace(/(λ|\\)(\w+)\./g,"[$2]")].reduce(([s,x],v,i) =>
+                '[]'.includes(v) ? [s,x^=1] : [s+(x?'λ'+v+'.':v),x]
+            ,['',0])[0]
         }
     </script>
 </body>
