@@ -5,110 +5,181 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title> Lambda Calculus Evaluator </title>
-    <style>
-        code {
-            font-weight: bold;
-        }
-    </style>
+    <style> code { font-weight: bold; } </style>
 </head>
 <body style="background-color:#ccc;">
     <center style="margin: 20%;">
         <div style="text-align: left;"> 
-            <center> Evaluate some λ Calculus. </center> <br>
+            <center> Normal Order λ Calculus Evaluator. </center> <br>
             Variable names can only consist of one letter.
             The expression <code>a b</code> will represent
             the function <code>a</code> applied to <code>b</code>.
             The lambda symbol can be written as 
-            <code>\</code> or <code>λ</code>.
+            <code>\</code> or <code>λ</code>. If you want to declare variables,
+             add statements in the beginning and end them with <code>;</code>.
+             After the last <code>;</code>, you should put the expression you want
+             to evaluate.
         </div> 
         
-        <input type="text" id="code"
-            style="width:60vw;" style="width:60vw;">
+        <textarea id="code" style="width:60vw;height:100px;" style="width:60vw;" cols="50" rows="5" spellcheck="false"></textarea>
         <input type="button" value="go" onclick="
-            const D = x => document.getElementById(x)
             D('output').innerHTML = 'ß-reduction in process...'
-            setTimeout(_ => 
-                D('output').innerHTML = F(D('code').value),
+            setTimeout(_ => (
+                D('output').innerHTML = F(D('code').value), 
+                D('code').focus()),
                 300 + Math.random()*200|0)
         ">
         <div style="margin:10%;">output:</div>
         <div id="output"></div>
+        <div>
+            More info: <br>
+            <a href="https://www.inf.fu-berlin.de/lehre/WS03/alpi/lambda.pdf"> lambda pdf 1 </a> <br>
+            <a href="http://www.cse.chalmers.se/research/group/logic/TypesSS05/Extra/geuvers.pdf"> lambda pdf 2 </a>
+        </div>
     </center>
+    <!-- test code should give us 4:
+    S = \wyx.y(wyx); P = λn.nG(λz.z00)F; G = (λpz.z(S(pT))(pT)); T = λxy.x; F = λxy.y; 5 = \ab.a(a(ab)); 0 =\xy.y; P 5 -->
     <script>
-        /*
-            Maybe do uncurrying trick?
-            We look for the first λ with 
-            an opening parenthesis to the left of it,
-            we find the value that needs to be applied to the function,
-            apply it, and continue the reduction recursively.
-            If we find no parenthesis, we can reduce no further.
-        */
+        log=console.log
+        const D = x => document.getElementById(x) 
+        D('code').value = "1 = λab.ab; S = λwyx.y(wyx); S 1"
+        const history = []
+        D('code').focus()
         function F(code) {
-            const s = uncurryString(code.replace(/ /g,'')), l = s.length;
+            history.length = 0
+            V=x=>(log(x),x)
+            const sections = V(code.split`;`.map(v => v.split`=`.map(x=>x.trim())))
+            let t = sections.pop()[0]
             
-            // nice realization: we can only apply functions when there's parenthesis
-            return (function f(s) {
-                if (!s.includes('(')) return s
-                
-                const terms = (s => 
-                    [...s].reduce(([r,x,y],v,i) => {
-                        const a = v==='(', b = v===')', c = x===1
-                        if (v==='λ' && x === 0 && !y) { r.push(''); y=1 }
-                        if (y) { r[r.length-1] += v; return [r,x,y] }
-                        if (x > 0) { 
-                            if (!(b&&c)) r[r.length-1] += v
-                            return [r, x + (({')':-1,'(':1})[v]||0)] 
-                        }
-                        if (a) return [[...r,''],x+1]
-                        return [[...r,v],x]
-                    },[[],0,0])[0]
-                )(s)
-
-                console.log(terms)
-
-                const [a,b] = terms.splice(0,2)
-                
-                console.log('a,b =',a,b)
-
-                if (a[0]!=='λ') return '(' + [a,b,...terms].map(f).join`)(` + ')'
-                
-                // first, rename variables as needed
-
-                const applied = a.slice(3).replace(new RegExp(a[1],"g"),b)
-
-                console.log('applied =',applied)
-
-            })(s)
-
-            // const i = [...s].findIndex((c,i) => c==='(' && 'λ'===s[i+1])
-
-            // if (i < 0) return s
-            // const j = [...s,1].findIndex((c,j,t) => {
-            //     if (j <= i) return;
-            //     t[l] += ({')':-1,'(':1})[c]||0
-            //     if (!t[l]) return true
-            // })
-            // const k = [...s].findIndex((c,k) => k > i && c === '.')
-            // const arg = s.slice(i+2,i+3), body = s.slice(k+1,j)
-            // console.log('arg,body =',arg,body)
-            // if (/[a-zA-Z]/.test(s[j+1])) {
-                
-            // }
-
-            // console.log('s,i,j =',s,i,j)
-            // // find index of matching closing p
-            // // if character after that is a letter, apply it
-            // // if character after that is a lambda symbol, go until the end
-            // // if the character after that is an opening p, go until the matching p
-            // // recurse
-
-            return s
+            while (true) {
+                const [n,v] = sections.find(([n,v]) => t.includes(n))||[]
+                log('hey t =',t)
+                log('n,v =',n,v)
+                log()
+                if (n) 
+                    t = t.replace(new RegExp(n,"g"),`(${v})`)
+                else
+                    break
+            }
+            console.log('t =',t)
+            const s = uncurryString(t.replace(/ /g,''))
+            return curryString((betaReduce)(s))
         }
+
+        function getTerms(s) {
+            return [...s].reduce(([r,x,y],v,i) => {
+                const a = v==='(', b = v===')', c = x===1
+                if (v==='λ' && x === 0 && !y) { r.push(''); y=1 }
+                if (y) { r[r.length-1] += v; return [r,x,y] }
+                if (x > 0) { 
+                    if (!(b&&c)) r[r.length-1] += v
+                    return [r, x + (({')':-1,'(':1})[v]||0)] 
+                }
+                if (a) return [[...r,''],x+1]
+                return [[...r,v],x]
+            },[[],0,0])[0]
+        }
+        function curryString(s) {
+            return s.replace(/\.λ/g,'')
+        }
+
         function uncurryString(s) {
             return [...s.replace(/(λ|\\)(\w+)\./g,"[$2]")].reduce(([s,x],v,i) =>
                 '[]'.includes(v) ? [s,x^=1] : [s+(x?'λ'+v+'.':v),x]
             ,['',0])[0]
         }
+
+        function betaReduce(s) {
+            // check if infinite loop:
+            const i = history.lastIndexOf(s), l = history.length
+            if (i >= 0) {
+                if (l > 1 && history.slice(0,i).join`:`.endsWith(history.slice(i).join`:`)) {
+                    log('history =',history)
+                    return s // because history is now repeating itself
+                }
+            }
+            history.push(s)
+            log('s =',s)
+
+            const terms = getTerms(s)
+            let [a,b] = terms
+            if (a == null) return;
+
+            if (b == null) {
+                return s.length === 1 ? s : 
+                        s[0] === '(' ? betaReduce(s.slice(1,-1)) :
+                        s[0] === 'λ' ? s.slice(0,3) + betaReduce(s.slice(3)) :
+                        ('(' + terms.map(betaReduce).join`)(` + ')').replace(/\((.)\)/g,'$1')
+            }
+
+
+            if (a[0] !== 'λ') { // first term isn't a lambda
+                if (a[0] === '(') terms[0] = betaReduce(a)
+                return (terms[0] === a ? _=>_ : betaReduce)
+                    (('(' + terms.map(betaReduce).join`)(` + ')').replace(/\((.)\)/g,'$1'))
+            }
+
+            if (!s.includes('(')) { // cannot reduce without parenthesis
+                return s 
+            }
+
+            const [avars,bvars] = [a,b].map(s=>Array.from(new Set(s.replace(/[^a-zA-Z]/g,''))))
+            const allvars = [...avars,...bvars]
+            const [aboundvars,bboundvars] = [avars,bvars]
+                .map((x,i)=>x.filter(v => [a,b][i].includes('λ'+v)))
+            
+            const freeavars = avars.filter(v => !aboundvars.includes(v))
+            const alpha = [...'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ']
+
+            // renaming of variables in an expression a b:
+            //   we only rename bound variables.
+            //   we only rename variables in a if:
+            //     they are the same as any in b
+            //   we only rename variables in b if:
+            //     they are the same as any free variables in a 
+
+            aboundvars.forEach((v,i) => { // rename a's bound variables if found in bvars
+                if (bvars.includes(v)) {
+                    for (const c of alpha) {
+                        if (!allvars.includes(c)) {
+                            allvars.push(c)
+                            a = terms[0] = a.replace(new RegExp(v,"g"),c)
+                            return;
+                        }
+                    }
+                    throw "can't rename more variables"
+                }
+            })
+
+            bboundvars.forEach((v,i) => { // rename b's bound variables if found in freeavars
+                if (freeavars.includes(v)) {
+                    for (const c of alpha) {
+                        if (!allvars.includes(c)) {
+                            allvars.push(c)
+                            b = terms[1] = b.replace(new RegExp(v,"g"),c)
+                            return;
+                        }
+                    }
+                    throw "can't rename more variables"
+                }
+            })
+            const nextFree = alpha.find(c => !allvars.includes(c))
+            // rename any inner bounded variables in a
+            const A = [...a.slice(3)].reduce(([s,x],v,i) => {
+                if (a.slice(3+i).startsWith('λ'+a[1])) x = 1
+                if (x > 0) x += v === '(' ? 1 : v === ')' ? -1 : 0
+                if (v === a[1] && x > 0) v = nextFree
+                return [v === a[1] && x === 0 ? s + `(${b})` : s + v, x]
+            }, ['',0])[0]
+
+            const applied = A.replace(new RegExp(a[1],"g"),`(${b})`)
+            log('applied =',applied)
+            const t = terms.length > 2 ? '(' + applied + ')' +
+                (('(' + terms.slice(2).map(betaReduce).join`)(` + ')').replace(/\((.)\)/g,'$1')) : applied
+                
+            return betaReduce(t)
+        }
+
     </script>
 </body>
 </html>
