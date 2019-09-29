@@ -8,7 +8,7 @@
     <style> code { font-weight: bold; } </style>
 </head>
 <body style="background-color:#ccc;">
-    <center style="margin: 20%;">
+    <center style="margin: 10%;">
         <div style="text-align: left;"> 
             <center> Normal Order λ Calculus Evaluator. </center> <br>
             Variable names can only consist of one letter.
@@ -21,7 +21,7 @@
              to evaluate.
         </div> 
         
-        <textarea id="code" style="width:60vw;height:100px;" style="width:60vw;" cols="50" rows="5" spellcheck="false"></textarea>
+        <textarea id="code" style="width:80vw;height:100px;" style="width:60vw;" cols="50" rows="5" spellcheck="false"></textarea>
         <input type="button" value="go" onclick="
             D('output').innerHTML = 'ß-reduction in process...'
             setTimeout(_ => (
@@ -30,7 +30,7 @@
                 300 + Math.random()*200|0)
         ">
         <div style="margin:10%;">output:</div>
-        <div id="output"></div>
+        <div id="output" style="padding:2%;background-color:#444;color:white;"></div>
         <div>
             More info: <br>
             <a href="https://www.inf.fu-berlin.de/lehre/WS03/alpi/lambda.pdf"> lambda pdf 1 </a> <br>
@@ -38,11 +38,14 @@
         </div>
     </center>
     <!-- test code should give us 4:
-    S = \wyx.y(wyx); P = λn.nG(λz.z00)F; G = (λpz.z(S(pT))(pT)); T = λxy.x; F = λxy.y; 5 = \ab.a(a(ab)); 0 =\xy.y; P 5 -->
+    S = \wyx.y(wyx); P = λn.nG(λz.z00)F; G = (λpz.z(S(pT))(pT)); T = λxy.x; F = λxy.y; 5 = \ab.a(a(a(a(ab)))); 0 =\xy.y; P 5 -->
     <script>
         log=console.log
         const D = x => document.getElementById(x) 
-        D('code').value = "1 = λab.ab; S = λwyx.y(wyx); S 1"
+        D('code').value = `1 = λab.ab; 
+S = λwyx.y(wyx); 
+
+S 1`
         const history = []
         D('code').focus()
         function F(code) {
@@ -51,11 +54,8 @@
             const sections = V(code.split`;`.map(v => v.split`=`.map(x=>x.trim())))
             let t = sections.pop()[0]
             
-            while (true) {
-                const [n,v] = sections.find(([n,v]) => t.includes(n))||[]
-                log('hey t =',t)
-                log('n,v =',n,v)
-                log()
+            for (let n,v;;) {
+                [n,v] = sections.find(([n,v]) => t.includes(n))||[]
                 if (n) 
                     t = t.replace(new RegExp(n,"g"),`(${v})`)
                 else
@@ -93,9 +93,10 @@
             // check if infinite loop:
             const i = history.lastIndexOf(s), l = history.length
             if (i >= 0) {
-                if (l > 1 && history.slice(0,i).join`:`.endsWith(history.slice(i).join`:`)) {
-                    log('history =',history)
-                    return s // because history is now repeating itself
+                // if (l > 1 && history.slice(0,i).join`:`.endsWith(history.slice(i).join`:`)) {
+                if (l > 1000) {
+                    // log('history =',history)
+                    return history.slice(0,15).join`<br>` + '<br>...<br>[ divergent expression ]'
                 }
             }
             history.push(s)
@@ -181,5 +182,6 @@
         }
 
     </script>
+    <script src="tests.js"></script>
 </body>
 </html>
