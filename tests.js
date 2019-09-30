@@ -1,26 +1,35 @@
 const inputOutput = [
-    [
-        'S = \\wyx.y(wyx); P = λn.nG(λz.z00)F; G = (λpz.z(S(pT))(pT)); T = λxy.x; F = λxy.y; 5 = \\ab.a(a(a(a(ab)))); 0 =\\xy.y; P 5',
-        '\\ab.a(a(a(ab)))'
-    ],
 
     [
         '(λsz.s(sz))(λwyx.y(wyx))(λuv.u(u(uv)))',
-        '\\ab.a(a(a(a(ab))))'
+        'λbc.b(b(b(b(bc))))'
     ],
 
+    // [
+    //     `
+// R = λrn.Zn0(nS(r(Pn))); 
+// Y = λy.(λx.y(xx))(λx.y(xx)); 
+// S = \\wyx.y(wyx); 
+// P = λn.nΦ(λz.z00)F;
+// Φ = (λpz.z(S(pT))(pT)); 
+// T = λxy.x; F = λxy.y; 
+// 3 = \\ab.a(a(ab)); 0 =\\xy.y; 
+
+// YR`,
+    //     '\\ab.a(a(a(a(a(ab)))))',
+    // ],
+
     [
-        `
-        R = (λrn.Zn0(nS(r(Pn)))); 
-        Y = (λy.(λx.y(xx))(λx.y(xx))); 
-        S = \\wyx.y(wyx); 
-        P = λn.nG(λz.z00)F;
-        G = (λpz.z(S(pT))(pT)); 
-        T = λxy.x; F = λxy.y; 
-        3 = \\ab.a(a(ab)); 0 =\\xy.y; 
+        `S = λwyx.y(wyx); 
+        P = λn.nΦ(λz.z00)F;
+        Φ = λpz.z(S(pT))(pT); 
+        0 = λxy.y;
+        F = λxy.y;
+        T = \\ab.a;
+        5 = λab.a(a(a(a(ab)))); 
         
-        YR3`,
-        '\\ab.a(a(a(a(a(ab)))))',
+        P 5`,
+        '4'
     ]
 ]
 
