@@ -7,15 +7,19 @@ const inputOutput = [
 
     // [
     //     `
-// R = λrn.Zn0(nS(r(Pn))); 
-// Y = λy.(λx.y(xx))(λx.y(xx)); 
-// S = \\wyx.y(wyx); 
-// P = λn.nΦ(λz.z00)F;
-// Φ = (λpz.z(S(pT))(pT)); 
-// T = λxy.x; F = λxy.y; 
-// 3 = \\ab.a(a(ab)); 0 =\\xy.y; 
-
-// YR`,
+    // R = λrn.Zn0(nS(r(Pn))); 
+    // Z = λx.xF¬F;
+    // ¬ = λx.xFT;
+    // Y = λy.(λx.y(xx))(λx.y(xx)); 
+    // S = λwyx.y(wyx); 
+    // P = λn.nΦ(λz.z00)F;
+    // Φ = λpz.z(S(pT))(pT); 
+    // T = λxy.x; F = 0; 
+    // 3 = λab.a(a(ab)); 
+    // 0 = λxy.y; 
+    // 2 = λab.a(ab);
+    
+    // R(YR)3`,
     //     '\\ab.a(a(a(a(a(ab)))))',
     // ],
 
@@ -23,37 +27,55 @@ const inputOutput = [
         `S = λwyx.y(wyx); 
         P = λn.nΦ(λz.z00)F;
         Φ = λpz.z(S(pT))(pT); 
-        0 = λxy.y;
-        F = λxy.y;
-        T = \\ab.a;
+        0 = λxy.y;F=0;
+        T = λab.a;
         5 = λab.a(a(a(a(ab)))); 
         
-        P 5`,
-        '4'
+        P 5
+        `,
+        'λij.i(i(i(ij)))'
+    ],
+
+    [
+        `
+        2 = λab.a(ab); 
+        3 = λab.a(a(ab));
+        + = λwyx.y(wyx); 
+        M = λxy.(λz.x(yz));
+        ${'`'} = λf. ... create the "create infix operator";
+        * = ${'`'}M - infix multiplication;
+        P = λxy.yx;
+
+        P 2 3`,
+        'λbe.b(b(b(b(b(b(b(be)))))))'
     ]
 ]
 
 function runTests() {
-    const fail = inputOutput.find(([input,output]) => !alphaEquivalent(F(input),output))
-    
-    log(fail ? `failed with input = ${fail[0]}
+    const fail = inputOutput.find(([input,output]) => !alphaEquivalent(F(input),output));
+    (x => (alert(x),log(x),x) )(fail ? `failed with input = ${fail[0]}
         actual:  ${F(fail[0])}
         expected:${fail[1]}` : 'Passed all the tests!!')
 }
 
 function alphaEquivalent(a,b) {
-    // black box approach, for now
-    let passed = true
-    if (!a.length === b.length) return log('the lengths are not equal')
-
-    return passed
-    // rename all bound vars in both to a,b,c..., then check string equality         
-    // const alpha = [...'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ']
-    // const [avars,bvars] = [a,b].map(s=>Array.from(new Set(s.replace(/[^a-zA-Z]/g,''))))
-    // const allvars = [...avars,...bvars]
-    // const [aboundvars,bboundvars] = [avars,bvars]
-    //     .map((x,i)=>x.filter(v => [a,b][i].includes('λ'+v)))
-    // aboundvars.forEach
-
-    // variables can occur free and bound in the same expression
+    if (a.length !== b.length) 
+        return alert('the lengths are not equal')
+    if ([...a].some((c,i) => 'λ.()'.includes(c) && c !== b[i])) 
+        return alert('some lambdas or dots or parenthesis are in the wrong place')
+        
+    return isEquiv(a,b) || alert('results are not alpha equivalent')
+}
+function isEquiv(a,b) {
+    const variables = new Set((a+b).replace(/[λ.()]/g,''))
+    for(let i=65,j=0; a[j]; i++) {
+        const c = String.fromCharCode(i);
+        if ('λ.()'.includes(a[j])) j++
+        if (variables.has(c)) continue
+        if (!variables.has(a[j]) || !variables.has(b[j])) continue
+        a = a.replace(new RegExp(a[j],'g'),c)
+        b = b.replace(new RegExp(b[j],'g'),c)
+        j++
+    }
+    return a === b
 }

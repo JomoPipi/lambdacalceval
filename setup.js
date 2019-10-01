@@ -1,6 +1,6 @@
 
 log=console.log
-const D = x => document.getElementById(x) 
+function D(x) { return document.getElementById(x) }
 
 
 Set_Up_Editor: {
@@ -41,15 +41,14 @@ Set_Up_Editor: {
       }
     })
     editor.getSession().setValue(`
-2 = λab.a(ab); 
-3 = λab.a(a(ab));
-+ = λwyx.y(wyx); 
-M = λxy.(λz.x(yz));
-${'`'} = λf. ... create the "create infix operator";
-* = ${'`'}M - infix multiplication;
-P = λxy.yx;
+S = λwyx.y(wyx); 
+P = λn.nΦ(λz.z00)F;
+Φ = λpz.z(S(pT))(pT); 
+0 = λxy.y;F=0;
+T = λab.a;
+5 = λab.a(a(a(a(ab)))); 
 
-P 2 3
+    P 5
 `)
     D('code').style.borderRadius = '10px'
     editor.setOptions(options);
