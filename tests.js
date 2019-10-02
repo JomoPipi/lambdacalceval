@@ -73,8 +73,8 @@ function isEquiv(a,b) {
         if ('λ.()'.includes(a[j])) j++
         if (variables.has(c)) continue
         if (!variables.has(a[j]) || !variables.has(b[j])) continue
-        a = a.replace(new RegExp(a[j],'g'),c)
-        b = b.replace(new RegExp(b[j],'g'),c)
+        a = replaceWith(a,a[j],c)
+        b = replaceWith(b,b[j],c)
         j++
     }
     return a === b

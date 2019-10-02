@@ -2,6 +2,13 @@
 log=console.log
 function D(x) { return document.getElementById(x) }
 
+// avoiding regex replace as much as possible because operators (variables) can be almost any symbol
+function replaceWith(str,find,replacement) { 
+  const i = str.indexOf(find)
+  return i < 0 ? str : replaceWith(
+    str.slice(0,i) + replacement + str.slice(i + find.length), find, replacement)
+}
+
 
 Set_Up_Editor: {
     var editor = window.ace.edit(D('code'))
@@ -34,7 +41,7 @@ Set_Up_Editor: {
         fromServer = true
         const {row, column} = editor.getCursorPosition()
         editor.setValue(s.split`\n`.map(s => 
-          s.replace(/\\/g,'λ') ).join`\n`)
+          replaceWith(s,'\\','λ') ).join`\n`)
         editor.clearSelection()
         editor.selection.moveTo(row, column)
         fromServer = false
