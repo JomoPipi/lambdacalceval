@@ -25,8 +25,14 @@ function F(code) {
 // 2 = λab.a(ab); 
 // (λa.λc.a(ac)) ((2)((2)b))
 
-    const s = uncurryString(t.replace(/ /g,''))
+    const s = uncurryString(replaceWith(t,' ',''))
     return curryString(betaReduce(s))
+}
+
+
+
+function replaceWith(str,find,replacement) { 
+    return  [...str].map(x => x === find ? replacement : x).join``
 }
 
 
@@ -65,7 +71,7 @@ function stripUselessParentheses(t) {
 
 
 function curryString(s) {
-    return s.replace(/\.λ/g,'')
+    return replaceWith(s,'\.λ','')
 }
 
 
@@ -165,9 +171,9 @@ function betaReduce(s, innerBit) {
                     if (!allvars.has(c)) {
                         allvars.add(c)
                         if (!i) 
-                            a = terms[0] = [...a].map(x => x === v ? c : x).join``
+                            a = terms[0] = replaceWith(a,v,c)
                         else
-                            b = terms[1] = [...b].map(x => x === v ? c : x).join``
+                            b = terms[1] = replaceWith(b,v,c)
                         return;
                     }
                 }
