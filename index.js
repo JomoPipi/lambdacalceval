@@ -13,13 +13,18 @@ function F(code) {
     log(JSON.stringify(sections),sections.length)
     if (sections.some(sec=>sec.length!==2)) return improper('improper code')
     
-    for (let n,v;;) {
-        [n,v] = sections.find(([n,v]) => t.includes(n))||[]
-        if (n) 
-            t = [...t].map(c => c === n ? `(${v})` : c).join``
-        else
-            break
-    }
+    // for (let n,v;;) {
+    //     [n,v] = sections.find(([n,v]) => t.includes(n))||[]
+    //     if (n) 
+    //         t = [...t].map(c => c === n ? `(${v})` : c).join``
+    //     else
+    //         break
+    // }
+
+    // ex: 
+// 2 = λab.a(ab); 
+// (λa.λc.a(ac)) ((2)((2)b))
+
     const s = uncurryString(t.replace(/ /g,''))
     return curryString(betaReduce(s))
 }
@@ -93,36 +98,50 @@ function updateHistory(s) {
 
 
 function betaReduce(s, innerBit) {
+
+    V = x => innerBit ? x : (log(x),x)
+
     s = stripUselessParentheses(s)
     
     if (!innerBit) updateHistory(s)
 
-    log('s =',s)
-
     const terms = getTerms(s)
+
+    log('terms[0] =',terms[0])
+
+    let expanded = false
+    while (vars[terms[0]]) {
+        expanded = true
+        terms[0] = uncurryString(vars[terms[0]]);
+    }
+
+  if (!expanded && !s.includes('(')) { // cannot reduce without parenthesis
+        return V(s) 
+    }
+
     let [a,b] = terms
-    if (a == null) return improper(s);
+
+    log('terms =',terms)
+    log('a,b =',a,b)
+
+    if (a == null) return V(improper(s));
 
     if (b == null) {
-        return  a.length === 1 ? a : 
+        log('here')
+        return  V(a.length === 1 ? a : 
                 a[0] === 'λ' ? s.slice(0,3) + betaReduce(s.slice(3), true) : // if first character is not ( or 'λ, it's a variable
-                (_=>{ throw 'why does a variable have length greater than 1?'})()
+                (_=>{ throw 'why does a variable have length greater than 1?'})())
     }
 
     if (a[0] !== 'λ') { // first term isn't a lambda
         if (a[0] === '(') terms[0] = betaReduce(a,true)
 
         if (terms[0] !== a) {
-            return betaReduce( '(' + terms[0] + ')' + ('(' + terms.slice(1).join`)(` + ')').replace(/\((.)\)/g,'$1'), innerBit )
+            return V(betaReduce( '(' + terms[0] + ')' + ('(' + terms.slice(1).join`)(` + ')').replace(/\((.)\)/g,'$1'), innerBit ))
         }
-        log('hiiii',terms.join` , `)
-        return ('(' + terms.map(x => betaReduce(x, true)).join`)(` + ')').replace(/\((.)\)/g,'$1')
+        return V(('(' + terms.map(x => betaReduce(x, true)).join`)(` + ')').replace(/\((.)\)/g,'$1'))
     }
 
-
-    if (!s.includes('(')) { // cannot reduce without parenthesis
-        return s 
-    }
 
     const [avars,bvars] = [a,b].map(s=>Array.from(new Set(s.replace(/[λ.()]/g,''))))
     const allvars = new Set([...avars,...bvars])
@@ -158,10 +177,10 @@ function betaReduce(s, innerBit) {
     )
     
     const applied = applyAB(a,b)
-    log('applied =',applied)
     const t = '(' + applied + ')' +  (terms.length > 2 ? ('(' + terms.slice(2).join`)(` + ')').replace(/\((.)\)/g,'$1') : '')
         
-    return betaReduce(t, innerBit)
+    log('here t =',t)
+    return V(betaReduce(t, innerBit))
 }
 
 
