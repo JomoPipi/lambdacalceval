@@ -3,30 +3,27 @@ const history = [], vars = {}
 D('code').focus()
 const improper = x => `<span style="color:red;">${x}</span>`
 
+function Expression(T,V) {
+    this.type = T
+    this.value = V
+}
+function Variable(v) {
+    
+}
+
 function F(code) {
     history.length = 0
     V=x=>(log(x),x)
     for (let i in vars) delete vars[i]
-    const sections = V(code.split`;`.map(v => (([n,v]) => (vars[n] = v,[n,v]))(v.split`=`.map(x=>x.trim())) ))
+    const sections = code.split`;`.map(v => 
+        (([n,v]) => (vars[n] = v,[n,v]))
+        (v.split`=`.map(x=>x.trim())) )
 
-    let t = sections.pop()[0]
-    log(JSON.stringify(sections),sections.length)
+    const t = sections.pop()[0]
+
     if (sections.some(sec=>sec.length!==2)) return improper('improper code')
-    
-    // for (let n,v;;) {
-    //     [n,v] = sections.find(([n,v]) => t.includes(n))||[]
-    //     if (n) 
-    //         t = [...t].map(c => c === n ? `(${v})` : c).join``
-    //     else
-    //         break
-    // }
 
-    // ex: 
-// 2 = λab.a(ab); 
-// (λa.λc.a(ac)) ((2)((2)b))
-
-    const s = uncurryString(replaceWith(t,' ',''))
-    return curryString(betaReduce(s))
+    return curryString(betaReduce(getTerms(uncurryString(t))))
 }
 
 
@@ -36,7 +33,7 @@ function F(code) {
 
 
 function getTerms(s) {
-    return [...s].reduce(([r,x,y],v,i) => {
+    return [...s].reduce(([r,x,y],v) => {
         const a = v==='(', b = v===')', c = x===1
         if (v==='λ' && x === 0 && !y) { r.push(''); y=1 }
         if (y) { r[r.length-1] += v; return [r,x,y] }
