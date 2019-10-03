@@ -50,12 +50,12 @@ Set_Up_Editor: {
       }
     })
     editor.getSession().setValue(`
-S = λwyx.y(wyx); 
-P = λn.nΦ(λz.z00)F;
-Φ = λpz.z(S(pT))(pT); 
-0 = λxy.y;F=0;
-T = λab.a;
-5 = λab.a(a(a(a(ab)))); 
+S = λw y x.y (w y x); 
+P = λn.n Φ(λz.z 0 0) F;
+Φ = λp z.z(S(p T))(p T); 
+0 = λx y.y;F=0;
+T = λa b.a;
+5 = λa b.a(a(a(a(a b)))); 
 
     P 5
 `)

@@ -1,53 +1,52 @@
 const inputOutput = [
 
     [
-        '(λsz.s(sz))(λwyx.y(wyx))(λuv.u(u(uv)))',
-        'λbc.b(b(b(b(bc))))'
-    ],
-
-    // [
-    //     `
-    // R = λrn.Zn0(nS(r(Pn))); 
-    // Z = λx.xF¬F;
-    // ¬ = λx.xFT;
-    // Y = λy.(λx.y(xx))(λx.y(xx)); 
-    // S = λwyx.y(wyx); 
-    // P = λn.nΦ(λz.z00)F;
-    // Φ = λpz.z(S(pT))(pT); 
-    // T = λxy.x; F = 0; 
-    // 3 = λab.a(a(ab)); 
-    // 0 = λxy.y; 
-    // 2 = λab.a(ab);
-    
-    // R(YR)3`,
-    //     '\\ab.a(a(a(a(a(ab)))))',
-    // ],
-
-    [
-        `S = λwyx.y(wyx); 
-        P = λn.nΦ(λz.z00)F;
-        Φ = λpz.z(S(pT))(pT); 
-        0 = λxy.y;F=0;
-        T = λab.a;
-        5 = λab.a(a(a(a(ab)))); 
-        
-        P 5
-        `,
-        'λij.i(i(i(ij)))'
+        '(λs z.s(s z))(λw y x.y(w y x))(λu v.u(u(u v)))',
+        'λb c.b(b(b(b(b c))))'
     ],
 
     [
         `
-        2 = λab.a(ab); 
-        3 = λab.a(a(ab));
-        + = λwyx.y(wyx); 
-        M = λxy.(λz.x(yz));
+        R = λr n.Z n 0(n S(r(P n))); 
+        Z = λx.x F ¬ F;
+        ¬ = λx.x F T;
+        Y = λy.(λx.y(x x))(λx.y(x x)); 
+        S = λw y x.y(w y x); 
+        P = λn.n Φ(λz.z 0 0)F;
+        Φ = λp z.z(S(p T))(p T); 
+        T = λx y.x; F = 0; 
+        0 = λa b.b;
+        4 = λa b.a(a(a(a b))); 
+        
+        Y R 4`,
+        'λa b.a(a(a(a(a(a(a(a(a(a b)))))))))',
+    ],
+
+    [
+        `S = λw y x.y(w y x); 
+        P = λn.n Φ(λz.z 0 0)F;
+        Φ = λp z.z(S(p T))(p T); 
+        0 = λx y.y;F=0;
+        T = λa b.a;
+        5 = λa b.a(a(a(a(a b)))); 
+        
+        P 5
+        `,
+        'λi j.i(i(i(i j)))'
+    ],
+
+    [
+        `
+        2 = λa b.a(a b); 
+        3 = λa b.a(a(a b));
+        + = λw y x.y(w y x); 
+        M = λx y.(λz.x(y z));
         ${'`'} = λf. ... create the "create infix operator";
         * = ${'`'}M - infix multiplication;
-        P = λxy.yx;
+        P = λx y.y x;
 
         P 2 3`,
-        'λbe.b(b(b(b(b(b(b(be)))))))'
+        'λb e.b(b(b(b(b(b(b(b e)))))))'
     ]
 ]
 
@@ -59,6 +58,7 @@ function runTests() {
 }
 
 function alphaEquivalent(a,b) {
+    log('a,b =',a,b)
     if (a.length !== b.length) 
         return alert('the lengths are not equal')
     if ([...a].some((c,i) => 'λ.()'.includes(c) && c !== b[i])) 
@@ -67,12 +67,12 @@ function alphaEquivalent(a,b) {
     return isEquiv(a,b) || alert('results are not alpha equivalent')
 }
 function isEquiv(a,b) {
-    const variables = new Set((a+b).replace(/[λ.()]/g,''))
+    const variables = new Set((a+b).split(/[λ.() ]+/))
     for(let i=65,j=0; a[j]; i++) {
         const c = String.fromCharCode(i);
-        if ('λ.()'.includes(a[j])) j++
+        if ('λ.() '.includes(a[j])) j++
         if (variables.has(c)) continue
-        if (!variables.has(a[j]) || !variables.has(b[j])) continue
+        if (!variables.has(a[j]) || !variables.has(b[j])) { j++; continue }
         a = replaceWith(a,a[j],c)
         b = replaceWith(b,b[j],c)
         j++

@@ -9,20 +9,18 @@
     <script src="ace.js"></script>
 </head>
 <body style="background-color:#ccc;">
-    <center style="margin: 10%;">
+    <center style="margin: 5%;">
         <div style="text-align: left;"> 
             <p style="word-wrap:break-word;">
                 <center> Normal Order λ Calculus Evaluator. </center> <br>
                 Insert some λ calculus into the text area and press go to evaluate it.
-                Variable names can only consist of one letter.
                 The expression <code>ab</code> will represent
                 the function <code>a</code> applied to <code>b</code>.
                 Typing a backslash (<code>\</code>) results in the lambda symbol. 
                 If you want to declare variables,
                 add statements in the beginning and end them with <code>;</code>.
                 After the last <code>;</code> you should put the expression you want
-                to evaluate. Any symbols other than <code> λ . ( ) ; </code>
-                and whitespace will be treated as variables.
+                to evaluate.
             </p>
         </div> 
         
@@ -34,7 +32,7 @@
                 D('code').focus()),
                 300 + Math.random()*200|0)
         ">
-        <div style="margin:10%;">output:</div>
+        <div>output:</div>
         <div id="output" style="padding:2%;background-color:#444;color:white;"></div>
         <div>
             More info: <br>
