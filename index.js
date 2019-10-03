@@ -42,9 +42,9 @@ function betaReduce(e, outer_scope_awaits_lambda) {
     // we need to check whether or not there is an outer value to apply a to (because, maybe, we recursed into this expression (e)).
     // if this is the case (a value outside is awaiting application), we should only try to reduce a by steps until it is a function
 
-        if (![λ,'.',' '].some(t => a.includes(t))) 
+        if (![λ, ...Object.keys(vars)].some(t => a.includes(t))) {
             return a; // no possible way to reduce
-
+        }
         if (outer_scope_awaits_lambda) {
             if (a[0] === λ) {
                 return a; // yay recursion stopped!
@@ -71,7 +71,53 @@ function betaReduce(e, outer_scope_awaits_lambda) {
     }
 
     // if code reaches here, then a is a lambda and we can simply apply it to b.
+    const applied = applyAB(a,b)
+    console.log('applied =',applied)
 }
+function applyAB(a,b) {
+    /* 
+        apply function a to expression b 
+        don't rename any inner bound variables
+    */
+    const i = a.indexOf('.')
+    const variables = a.slice(1,i).trim().split(' ')
+    const variable = variables[0]
+    const head = variables.length === 1? '' : λ + variables.slice(1).join` ` + '.'
+    body = a.slice(a.indexOf('.')+1)
+
+    // tokenize a and figure out which tokens equal to variable must not be replaced
+    const tokens = tokenize(body)
+
+    // basically, if we find variable between a λ and . in the body, 
+    // then we must not replace until we reach the next corresponding ')'
+    let level = 0, inhead = false
+    return head + tokens.map(t => {
+        inhead = t === λ ? true : t === '.' ? false : inhead
+        if (level > 0) level += t === ')' ? -1 : t === '(' ? 1 : 0 
+        if (inhead && level === 0 && t === variable) { level = 1 } 
+        // we be in level 0 in order to replace variables
+        return level === 0 && t === variable ? b : t 
+    })
+}
+
+
+
+
+function tokenize(s) {
+    let variableBuffer = false
+    return [...s].reduce((a,v) => {
+        if (!'λ. ()'.includes(v)) {
+            if (!variableBuffer) a.push('')
+            variableBuffer = true
+        } else {
+            variableBuffer = false
+        }
+        return v === ' ' ? a :
+        variableBuffer ? (a[a.length-1] += v, a) :
+        [...a, v]
+    }, [])
+}
+
 
 
 
@@ -141,21 +187,6 @@ function updateHistory(s) {
     log('history.length =',history.length)
 }
 
-function applyAB( a, b) { 
-    /* 
-        apply function a to expression b 
-        don't rename any inner bound variables
-    */
-    let y = 0
-    return  [...a.slice(3)].map((x,i) => {
-        const z = x === a[1]
-        if (z && a[i-1+3] === λ) 
-            y = a[i-2+3] === '(' ? 1 : Infinity
-        if (y > 1) 
-            y += x === '(' ? 1 : x === ')' ? -1 : 0
-        return y === 0 && z ? `(${b})` : x
-    }).join`` 
-}
 
 
 
