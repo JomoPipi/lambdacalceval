@@ -50,14 +50,20 @@ Set_Up_Editor: {
       }
     })
     editor.getSession().setValue(`
-S = λw y x.y (w y x); 
-P = λn.n Φ(λz.z 0 0) F;
-Φ = λp z.z(S(p T))(p T); 
-0 = λx y.y;F=0;
-T = λa b.a;
-5 = λa b.a(a(a(a(a b)))); 
-
-    P 5
+    mul = λa b f x . a (b f) x;
+    0 = λa b.b;
+    1 = λa b.a b;
+    2 = λa b.a (a b);
+    3 = λa b.a (a (a b));
+    S = λw y x.y (w y x); 
+    P = λn.n Φ(λz.z 0 0) F;
+    Φ = λp z.z(S(p T))(p T); 
+    0 = λx y.y;F=0;
+    T = λa b.a;
+    5 = λa b.a(a(a(a(a b)))); 
+    
+        P (mul 2 3)
+    
 `)
     D('code').style.borderRadius = '10px'
     editor.setOptions(options);
