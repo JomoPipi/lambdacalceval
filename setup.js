@@ -2,6 +2,8 @@
 log=console.log
 function D(x) { return document.getElementById(x) }
 
+const λ = 'λ' // yeah!!!
+
 // avoiding regex replace as much as possible because operators (variables) can be almost any symbol
 function replaceWith(str,find,replacement) { 
   const i = str.indexOf(find)
@@ -41,7 +43,7 @@ Set_Up_Editor: {
         fromServer = true
         const {row, column} = editor.getCursorPosition()
         editor.setValue(s.split`\n`.map(s => 
-          replaceWith(s,'\\','λ') ).join`\n`)
+          replaceWith(s,'\\',λ) ).join`\n`)
         editor.clearSelection()
         editor.selection.moveTo(row, column)
         fromServer = false
