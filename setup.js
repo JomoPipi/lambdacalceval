@@ -120,8 +120,7 @@ not     = λ cond . cond false true ;
 isEven  = λ n . n not true;
 isOdd   = λ n . not (isEven n);
         
-        
-            if true huh what
+    if true huh what
     
 
 `)
