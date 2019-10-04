@@ -59,11 +59,6 @@ function replaceWith(str,find,replacement) {
 
 Set_Up_Editor: {
     var editor = window.ace.edit(D('code'))
-    // 3 favorites: eclipse, chrome, and gruvbox
-    // test different editors: let COUNT = [0]
-    // let THEMES = 'dracula,clouds_midnight,solarized_light,solarized_dark,xcode,iplastic,chrome,merbivore_soft,kuroir,idle_fingers,gruvbox,eclipse,crimson_editor,dreamweaver,clouds'.split`,`
-    // document.onclick = function pick() { const t = THEMES[COUNT[0]++ % THEMES.length];editor.setTheme("ace/theme/" + t);console.log('theme =',t) }
-    // editor.renderer.setShowGutter(false);
     const options = {
       enableBasicAutocompletion: true, // the editor completes the statement when you hit Ctrl + Space
       enableLiveAutocompletion: true, // the editor completes the statement while you are typing
@@ -71,7 +66,8 @@ Set_Up_Editor: {
       fontSize: "100%",
       maxLines: 100,
       autoScrollEditorIntoView: true,
-      showGutter:false
+      showGutter:false,
+      tabSize: 2
     }
     editor.renderer.setShowGutter(false);
     editor.setAutoScrollEditorIntoView(true);
@@ -95,6 +91,9 @@ Set_Up_Editor: {
       }
     })
     editor.getSession().setValue(`
+
+-- Welcome to my λ-calculus interpreter!
+
 true   = λ fst snd . fst 
 
 false  = λ fst snd . snd 
@@ -107,20 +106,10 @@ or     = λ a b . a true (b true false)
     
 not    = λ cond . cond false true 
 
-+      = λ n f x . f (n f x) 
+-- Following the last variable assignment should be the expression to be evaluated:
 
-0      = λa b.b
-1      =   + 0 
-2      = 1 + 1 
-3      = 1 + 2 
-4      = 2 + 2 
-
-isEven = λ n . n not true
-isOdd  = λ n . not false
-        
-    if true huh what
-        
-    
+  if not true or not false and not false and not true huh what
+      
 `)
     D('code').style.borderRadius = '10px'
     editor.setOptions(options);

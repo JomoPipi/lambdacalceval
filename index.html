@@ -8,35 +8,37 @@
     <style> code { font-weight: bold; } </style>
     <script src="ace.js"></script>
 </head>
-<body style="background-color:#ccc;">
-    <center style="margin: 5%;">
-        <div style="text-align: left;"> 
-            <p style="word-wrap:break-word;">
-                <center> Normal Order λ Calculus Evaluator. </center> <br>
-                Insert some λ calculus into the text area and press go to evaluate it.
-                The expression <code>ab</code> will represent
-                the function <code>a</code> applied to <code>b</code>.
-                Typing a backslash (<code>\</code>) results in the lambda symbol. 
-                If you want to declare variables,
-                add statements in the beginning and end them with <code>;</code>.
-                After the last <code>;</code> you should put the expression you want
-                to evaluate.
-            </p>
-        </div> 
+<body style="background-color:#aaa;">
+    <center style="margin: 2%;">
+        <center style="margin-bottom: 1%;">
+            Normal Order λ Calculus Evaluator <br>
+            <span style="text-align: left;"> Typing a backslash (<code>\</code>) results in the lambda symbol. </span>
+        </center>
         
-        <div id="code" style="width:80vw;min-height:100px;" style="width:60vw;" cols="50" rows="5" spellcheck="false"></div>
-        <input type="button" value="go" onclick="runCode()">
-        <div>output:</div>
-        <div id="output" style="padding:2%;background-color:#444;color:white;"></div>
+        <div id="code" style="width:80vw;min-height:100px;" cols="50" rows="5" spellcheck="false"></div>
+        <div id="button_and_output" style="width:80vw;margin-top:10px;">
+
+            
+            <div id="output" style="width:90%; height: 50px; float: left;
+            border-top-left-radius: 10px; border-bottom-left-radius: 10px;
+            background-color:#444;color:white;min-height: 50px; line-height: 50px;"></div>
+
+            <input type="button" style="width:10%; height: 50px; float: left; border:none;
+            border-top-right-radius: 10px; border-bottom-right-radius: 10px;
+                color:white;background-color: rgb(4, 73, 57);" value="run" onclick="runCode()">
+
+
+        </div>
         <div>
-            More info: <br>
-            <a href="https://www.inf.fu-berlin.de/lehre/WS03/alpi/lambda.pdf"> lambda pdf 1 </a> <br>
-            <a href="http://www.cse.chalmers.se/research/group/logic/TypesSS05/Extra/geuvers.pdf"> lambda pdf 2 </a>
+            <div style="clear:both; line-height: 50px;">
+                Learn λ calculus: &nbsp; &nbsp;
+                <a href="https://www.inf.fu-berlin.de/lehre/WS03/alpi/lambda.pdf"> lambda pdf 1 </a> &nbsp;
+                <a href="http://www.cse.chalmers.se/research/group/logic/TypesSS05/Extra/geuvers.pdf"> lambda pdf 2 </a> &nbsp;
+                <a href="https://www.youtube.com/watch?v=peOk3W7KZ4o"> 12 min youtube video </a> &nbsp;
+                <a href="https://www.youtube.com/watch?v=MAB11qXZnuU"> 1 hr and 12 min youtube video </a>
+            </div>
         </div>
     </center>
-    <!-- test code should give us 4:
-    S = \wyx.y(wyx); P = λn.nG(λz.z00)F; G = (λpz.z(S(pT))(pT)); T = λxy.x; F = λxy.y; 5 = \ab.a(a(a(a(ab)))); 0 =\xy.y; P 5 -->
-    
     <script src="setup.js"></script>
     <script src="index.js"></script>
     <script src="tests.js"></script>

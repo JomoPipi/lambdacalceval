@@ -12,7 +12,7 @@ var CobolHighlightRules = function() {
     this.$rules = {
         "start" : [ {
             token : "comment",
-            regex : "\\//.*$"
+            regex : "--.*$"
         }, {
             token : "constant.numeric", // float
             regex : "[λ.]"
