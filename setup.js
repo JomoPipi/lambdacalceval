@@ -1,15 +1,60 @@
 
+
+
+
+
+
+
+
+const λ = 'λ'
 log=console.log
 function D(x) { return document.getElementById(x) }
 
-const λ = 'λ' // yeah!!!
 
+
+
+
+
+
+
+function runCode() {
+  D('output').innerHTML = 'ß-reduction in process...'
+  setTimeout(_ => (
+    D('output').innerHTML = F(window.ace.edit(D('code')).getSession().getValue()), 
+    D('code').focus()),
+    300 + Math.random()*200|0)
+}
+  
+
+
+
+
+
+
+
+document.onkeydown = function(e) { // ctrl + enter to run code
+  e.ctrlKey && (e.keyCode === 13 || e.keyCode === 83) && runCode() 
+}
+  
+
+
+
+
+
+
+  
 // avoiding regex replace as much as possible because operators (variables) can be almost any symbol
 function replaceWith(str,find,replacement) { 
   const i = str.indexOf(find)
   return i < 0 ? str : replaceWith(
     str.slice(0,i) + replacement + str.slice(i + find.length), find, replacement)
 }
+
+
+
+
+
+
 
 
 Set_Up_Editor: {
@@ -50,20 +95,35 @@ Set_Up_Editor: {
       }
     })
     editor.getSession().setValue(`
-    mul = λa b f x . a (b f) x;
-    0 = λa b.b;
-    1 = λa b.a b;
-    2 = λa b.a (a b);
-    3 = λa b.a (a (a b));
-    S = λw y x.y (w y x); 
-    P = λn.n Φ(λz.z 0 0) F;
-    Φ = λp z.z(S(p T))(p T); 
-    0 = λx y.y;F=0;
-    T = λa b.a;
-    5 = λa b.a(a(a(a(a b)))); 
+
+
+true    = λ fst snd . fst ;
+
+false   = λ fst snd . snd ;
+
+if      = λ cond then else . cond then else ;
+
+and     = λ a b . a (b true false) false ;
+
+or      = λ a b . a true (b true false) ;
     
-        P (mul 2 3)
+not     = λ cond . cond false true ;
+
++       = λ n f x . f ( n f x ) ;
+
+0       = λa b.b;
+1       = + 0 ;
+2       = 1 + 1 ;
+3       = 1 + 1 + 1 ;
+4       = 2 + 2 ;
+
+isEven  = λ n . n not true;
+isOdd   = λ n . not (isEven n);
+        
+        
+            if true huh what
     
+
 `)
     D('code').style.borderRadius = '10px'
     editor.setOptions(options);

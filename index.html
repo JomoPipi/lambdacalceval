@@ -25,13 +25,7 @@
         </div> 
         
         <div id="code" style="width:80vw;min-height:100px;" style="width:60vw;" cols="50" rows="5" spellcheck="false"></div>
-        <input type="button" value="go" onclick="
-            D('output').innerHTML = 'ß-reduction in process...'
-            setTimeout(_ => (
-                D('output').innerHTML = F(window.ace.edit(D('code')).getSession().getValue()), 
-                D('code').focus()),
-                300 + Math.random()*200|0)
-        ">
+        <input type="button" value="go" onclick="runCode()">
         <div>output:</div>
         <div id="output" style="padding:2%;background-color:#444;color:white;"></div>
         <div>
