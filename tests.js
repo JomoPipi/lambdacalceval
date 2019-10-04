@@ -7,28 +7,30 @@ const inputOutput = [
 
     [
         `
-        R = λr n.Z n 0(n S(r(P n))); 
-        Z = λx.x F ¬ F;
-        ¬ = λx.x F T;
-        Y = λy.(λx.y(x x))(λx.y(x x)); 
-        S = λw y x.y(w y x); 
-        P = λn.n Φ(λz.z 0 0)F;
-        Φ = λp z.z(S(p T))(p T); 
-        T = λx y.x; F = 0; 
-        0 = λa b.b;
-        4 = λa b.a(a(a(a b))); 
+        R = λr n.Z n 0(n S(r(P n)))
+        Z = λx.x F ¬ F
+        ¬ = λx.x F T
+        Y = λy.(λx.y(x x))(λx.y(x x))
+        S = λw y x.y(w y x)
+        P = λn.n Φ(λz.z 0 0)F
+        Φ = λp z.z(S(p T))(p T)
+        T = λx y.x
+        F = 0
+        0 = λa b.b
+        4 = λa b.a(a(a(a b)))
         
         Y R 4`,
         'λa b.a(a(a(a(a(a(a(a(a(a b)))))))))',
     ],
 
     [
-        `S = λw y x.y(w y x); 
-        P = λn.n Φ(λz.z 0 0)F;
-        Φ = λp z.z(S(p T))(p T); 
-        0 = λx y.y;F=0;
-        T = λa b.a;
-        5 = λa b.a(a(a(a(a b)))); 
+        `S = λw y x.y(w y x)
+        P = λn.n Φ(λz.z 0 0)F
+        Φ = λp z.z(S(p T))(p T)
+        0 = λx y.y
+        F=0
+        T = λa b.a
+        5 = λa b.a(a(a(a(a b))))
         
         P 5
         `,
@@ -37,13 +39,13 @@ const inputOutput = [
 
     [
         `
-        2 = λa b.a(a b); 
-        3 = λa b.a(a(a b));
-        + = λw y x.y(w y x); 
-        M = λx y.(λz.x(y z));
-        ${'`'} = λf. ... create the "create infix operator";
-        * = ${'`'}M - infix multiplication;
-        P = λx y.y x;
+        2 = λa b.a(a b)
+        3 = λa b.a(a(a b))
+        + = λw y x.y(w y x)
+        M = λx y.(λz.x(y z))
+        ${'`'} = λf. ... create the "create infix operator"
+        * = ${'`'}M - infix multiplication
+        P = λx y.y x
 
         P 2 3`,
         'λb e.b(b(b(b(b(b(b(b e)))))))'

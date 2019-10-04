@@ -10,13 +10,15 @@ function F(code) {
     history.length = 0
     // clear variables from the last time
     for (let i in vars) delete vars[i]
-
-    const sections = code.split`;`.slice(0,-1).map(v => 
+    const lines = code.split`\n`.filter(x=>x.trim())
+    let lastLineWithEqualSign = lines.reduce((a,v,i) => v.includes('=') ? i : a, -1)
+    log('lines,lastWith= =',lines,lastLineWithEqualSign)
+    const sections = lines.slice(0,-1).map(v => 
         (([n,v]) => (vars[n] = v,[n,v])) // parse variable declarations
         (v.split`=`.map(x=>x.trim()) ))
 
-    const expression = code.slice(code.lastIndexOf(';')+1).trim()
-
+    const expression = lines.slice(lastLineWithEqualSign+1).join` `.trim()
+    log('exp,vars',expression,vars)
     if (sections.some(sec=>sec.length!==2)) return improper('improper code')
 
     let exp = stripUselessParentheses(betaReduce(expression))

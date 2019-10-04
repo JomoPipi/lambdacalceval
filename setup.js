@@ -95,39 +95,37 @@ Set_Up_Editor: {
       }
     })
     editor.getSession().setValue(`
+true   = λ fst snd . fst 
 
+false  = λ fst snd . snd 
 
-true    = λ fst snd . fst ;
+if     = λ cond then else . cond then else 
 
-false   = λ fst snd . snd ;
+and    = λ a b . a (b true false) false 
 
-if      = λ cond then else . cond then else ;
-
-and     = λ a b . a (b true false) false ;
-
-or      = λ a b . a true (b true false) ;
+or     = λ a b . a true (b true false) 
     
-not     = λ cond . cond false true ;
+not    = λ cond . cond false true 
 
-+       = λ n f x . f ( n f x ) ;
++      = λ n f x . f (n f x) 
 
-0       = λa b.b;
-1       = + 0 ;
-2       = 1 + 1 ;
-3       = 1 + 1 + 1 ;
-4       = 2 + 2 ;
+0      = λa b.b
+1      =   + 0 
+2      = 1 + 1 
+3      = 1 + 2 
+4      = 2 + 2 
 
-isEven  = λ n . n not true;
-isOdd   = λ n . not (isEven n);
+isEven = λ n . n not true
+isOdd  = λ n . not false
         
     if true huh what
+        
     
-
 `)
     D('code').style.borderRadius = '10px'
     editor.setOptions(options);
-    // editor.setTheme("ace/theme/chrome");
-    // editor.getSession().setMode("ace/mode/javascript");
+    editor.setTheme("ace/theme/gruvbox");
+    editor.getSession().setMode("ace/mode/cobol"); // actually it's the lamdba mode!!
     editor.place = _ => {
       
       // if (window.innerWidth <= 700) return; 
