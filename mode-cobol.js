@@ -55,7 +55,7 @@ oop.inherits(Mode, TextMode);
 
 (function() {
 
-    this.lineCommentStart = "*";
+    this.lineCommentStart = "--";
 
     this.$id = "ace/mode/cobol";
 }).call(Mode.prototype);

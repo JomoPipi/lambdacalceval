@@ -1,5 +1,7 @@
 
-
+// failing test:
+// cons = λ b c a . a b c
+// cons a b -> λa.a a b
 
 const history = [], vars = {}
 
@@ -38,6 +40,15 @@ function F(code) {
              .replace(/ +\)/g,')')
              .replace(/(.λ|  )/g,' ')
 
+    for (const key in vars) {
+        try {
+            if (isEquiv(vars[key], exp)) {
+                exp = key
+                break
+            }
+        } catch (e) {}
+    }
+            
     return exp
 }
 
@@ -58,7 +69,7 @@ function betaReduce(e, outer_scope_awaits_lambda) {
     // we need to check whether or not there is an outer value to apply a to (because, maybe, we recursed into this expression (e)).
     // if this is the case (a value outside is awaiting application), we should only try to reduce a by steps until it is a function
 
-        if (![λ, ...Object.keys(vars)].some(t => a.includes(t))) {
+        if (![λ, ...Object.keys(vars)].some(t => a.split(/[λ .()]+/).includes(t))) {
             return a; // no possible way to reduce
         }
         if (outer_scope_awaits_lambda) {
