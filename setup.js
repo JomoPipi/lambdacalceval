@@ -123,4 +123,16 @@ not    = λ cond . cond false true
       editor.navigateLineEnd()
       editor.focus()
     }
-  }
+}
+
+
+
+let lightTheme = false
+function toggleTheme() { 
+  lightTheme ^= true
+  D('main-text').classList.toggle('light-theme');
+  D('output').classList.toggle('lt-output')
+  document.body.classList.toggle('light-body')
+  editor.setTheme( lightTheme ? "ace/theme/chrome" : "ace/theme/gruvbox");
+  D('toggle-theme').classList.toggle('mybtndark')
+}

@@ -13,7 +13,7 @@ var CobolHighlightRules = function() {
         "start" : [ {
             token : "comment",
             regex : "--.*$"
-        }, {
+        },{
             token : "constant.numeric", // float
             regex : "[λ.]"
         }, {
@@ -28,6 +28,9 @@ var CobolHighlightRules = function() {
         }, {
             token : "string",
             regex : "[)]"
+        }, {
+            token : "variable",
+            regex : "(?=.*=)(^[^=]*)"
         }, {
             token : "text",
             regex : "\\s+"

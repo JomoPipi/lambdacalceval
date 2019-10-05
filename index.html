@@ -5,12 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title> Lambda Calculus Evaluator </title>
-    <style> code { font-weight: bold; } </style>
+    <style> 
+        body { background-color: #222;}
+        code { font-weight: bold; } 
+        .maintext {
+            color:#eee;
+        }
+        .light-theme {
+            color:#222;
+        }
+        .output {
+            background-color:#444;
+            color:white;
+        }
+        .lt-output {
+            color:#222;
+            background-color: #bbb;
+        }
+        .light-body {
+            background-color: #fff;
+        }
+        .mybtn {
+            background: #555;
+            color:#bbb;
+        }
+        .mybtn:focus { outline: none; }
+        .mybtndark {
+            background: #eee;
+            color:#333;
+        }
+    
+    </style>
     <script src="ace.js"></script>
 </head>
-<body style="background-color:#fff;">
+<body class="bodyclass">
+    <button onclick="toggleTheme()" id="toggle-theme" class="mybtn" style="cursor: pointer;border-radius: 9px;"> theme </button>
     <center style="margin: 2%;">
-        <center style="margin-bottom: 1%;">
+        <center id="main-text" class="maintext" style="margin-bottom: 1%;">
             Normal Order λ Calculus Evaluator <br>
             <span style="text-align: left;"> Typing a backslash (<code>\</code>) results in the lambda symbol. </span>
         </center>
@@ -19,9 +50,9 @@
         <div id="button_and_output" style="width:80vw;margin-top:10px;">
 
             
-            <div id="output" style="width:90%; height: 50px; float: left;
+            <div class="output" id="output" style="width:90%; height: 50px; float: left;
             border-top-left-radius: 10px; border-bottom-left-radius: 10px;
-            background-color:#444;color:white;min-height: 50px; line-height: 50px;"></div>
+            min-height: 50px; line-height: 50px;"></div>
 
             <input type="button" style="width:10%; height: 50px; float: left; border:none;
             border-top-right-radius: 10px; border-bottom-right-radius: 10px;

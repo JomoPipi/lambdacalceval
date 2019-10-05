@@ -43,6 +43,10 @@ color: #C2859A;\
 .ace-gruvbox .ace_constant.ace_numeric {\
 color: #C2859A;\
 }\
+.ace-gruvbox .ace_marker-layer .ace_bracket {\
+margin: -1px 0 0 -1px;\
+border: 1px solid rgb(100, 100, 100);\
+}\
 .ace-gruvbox .ace_string {\
 color: #B8BA37;\
 }\

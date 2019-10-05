@@ -29,28 +29,38 @@ function F(code) {
                             
     if (sections.some(sec=>sec.length!==2)) return improper('improper code')
 
-    let exp = stripUselessParentheses(betaReduce(expression))
-    exp = exp.replace(/λ +/g, λ)
-             .replace(/ +λ/g, λ)
-             .replace(/\. +/g,'.')
-             .replace(/ +\./g,'.')
-             .replace(/\( +/g,'(')
-             .replace(/ +\(/g,'(')
-             .replace(/\) +/g,')')
-             .replace(/ +\)/g,')')
-             .replace(/(.λ|  )/g,' ')
+    let exp = finalize(expression)
 
     for (const key in vars) {
         try {
-            if (isEquiv(vars[key], exp)) {
+            if (isEquiv(finalize(vars[key]), exp)) {
                 exp = key
                 break
             }
-        } catch (e) {}
+        } catch (e) { log('Hey look a error: ',e) }
     }
             
     return exp
 }
+
+
+
+
+function finalize(exp) {
+    return stripUselessParentheses(betaReduce(exp))
+        .replace(/λ +/g, λ)
+        .replace(/ +λ/g, λ)
+        .replace(/\. +/g,'.')
+        .replace(/ +\./g,'.')
+        .replace(/\( +/g,'(')
+        .replace(/ +\(/g,'(')
+        .replace(/\) +/g,')')
+        .replace(/ +\)/g,')')
+        .replace(/(.λ|  )/g,' ')
+}
+
+
+
 
 function betaReduce(e, outer_scope_awaits_lambda) {
     const V = x => (x in vars ? V(vars[x]) : x)
@@ -69,7 +79,9 @@ function betaReduce(e, outer_scope_awaits_lambda) {
     // we need to check whether or not there is an outer value to apply a to (because, maybe, we recursed into this expression (e)).
     // if this is the case (a value outside is awaiting application), we should only try to reduce a by steps until it is a function
 
-        if (![λ, ...Object.keys(vars)].some(t => a.split(/[λ .()]+/).includes(t))) {
+        // if (![λ, ...Object.keys(vars)].some(t => a.includes(t))) { // buggy, try ```true = a; true ttrue```
+        const tokens = tokenize(a)
+        if (![λ, ...Object.keys(vars)].some(t => tokens.includes(t))) {
             return a; // no possible way to reduce
         }
         if (outer_scope_awaits_lambda) {
@@ -110,7 +122,7 @@ function applyAB(a,b) {
     const variables = a.slice(1,i).trim().split(' ') 
     // rename the other variables if they are equal to b or variables within b
     const btokens = new Set(tokenize(b))
-    const allvars = new Set(variables.slice(1).concat(b))
+    const allvars = new Set(variables.concat(b))
     const nextFree = _ => {
         for(let i = 97;;i++) {
             const c = String.fromCharCode(i)

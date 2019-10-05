@@ -21,6 +21,14 @@ const inputOutput = [
         
         Y R 4`,
         'λa b.a(a(a(a(a(a(a(a(a(a b)))))))))',
+    ], 
+
+    [
+        `
+        true = a
+        true ttrue
+        `,
+        'a(ttrue)',
     ],
 
     [
@@ -60,7 +68,9 @@ function runTests() {
 }
 
 function alphaEquivalent(a,b) {
-    log('a,b =',a,b)
+
+
+
     if (a.length !== b.length) 
         return alert('the lengths are not equal')
     if ([...a].some((c,i) => 'λ.()'.includes(c) && c !== b[i])) 
@@ -69,6 +79,8 @@ function alphaEquivalent(a,b) {
     return isEquiv(a,b) || alert('results are not alpha equivalent')
 }
 function isEquiv(a,b) {
+
+
     const variables = new Set((a+b).split(/[λ.() ]+/))
     for(let i=65,j=0; a[j]; i++) {
         const c = String.fromCharCode(i);
