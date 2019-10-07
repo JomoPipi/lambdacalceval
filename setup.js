@@ -92,17 +92,17 @@ Set_Up_Editor: {
     })
     editor.getSession().setValue(`
 
-    -- Welcome to my λ-calculus interpreter!
+-- Welcome to my λ-calculus interpreter!
 
-    true   = λ fst snd . fst 
+true   = λ fst snd . fst 
+
+false  = λ fst snd . snd 
+
+if     = λ cond then else . cond then else 
     
-    false  = λ fst snd . snd 
-    
-    if     = λ cond then else . cond then else 
-        
-    not    = λ cond . cond false true 
-    
-    -- Following the last variable assignment should be the expression to be evaluated:
+not    = λ cond . cond false true 
+
+-- Following the last variable assignment should be the expression to be evaluated:
 
   if (not true) huh what
 `)
