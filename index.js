@@ -103,6 +103,8 @@ function F(code) {
 
     let exp = finalize(expression)
 
+    D('steps').innerHTML = '<br>' + history.join`<br><br>` + '<br><br>'
+
     for (const key in vars) {
         try {
             if (isEquiv(finalize(vars[key]), exp)) {
@@ -111,6 +113,7 @@ function F(code) {
             }
         } catch (e) { log('Hey look a error: ',e) }
     }
+
             
     return exp
 }
@@ -134,16 +137,29 @@ function finalize(exp) {
 
 
 
-function betaReduce(e, outer_scope_awaits_lambda) {
+function betaReduce(e, options) {
+    const {outer_scope_awaits_lambda, outsideWrap} = (options=options||{})
     const V = x => (x in vars ? V(vars[x]) : x)
+    e = stripUselessParentheses(e)
     const terms = getTerms(e)
-
     /* implement later if something goes wrong */ // if (!matchedParens(e)) throw 'what happened here'
 
     let a = V(terms[0])
     const b = terms[1] 
 
     if (a == null) throw 'something is wrong'
+
+    const wrap = options.outsideWrap = outsideWrap || (x => x)
+    history.push( wrap(e) )
+
+    if (a !== terms[0] && !terms[0].includes(a)) {
+        const newExp = `(${a})` + gatherTerms(terms.slice(1))
+        if (history.slice(-1)[0].includes(newExp))
+            history.pop()
+            
+        history.push( wrap( newExp ) )
+    }
+        
 
     if (b == null) {
     // if outer scope awaits a lambda, this is where we stop the recursion if a is a lambda
@@ -152,6 +168,7 @@ function betaReduce(e, outer_scope_awaits_lambda) {
 
         // if (![λ, ...Object.keys(vars)].some(t => a.includes(t))) { // buggy, try ```true = a; true ttrue```
         const tokens = tokenize(a)
+
         if (![λ, ...Object.keys(vars)].some(t => tokens.includes(t))) {
             return a; // no possible way to reduce
         }
@@ -159,14 +176,14 @@ function betaReduce(e, outer_scope_awaits_lambda) {
             if (a[0] === λ) {
                 return a; // yay recursion stopped!
             } else {
-                return betaReduce(a, true)
+                return betaReduce(a, options)
             }
         } else {
             if (a[0] === λ) {
                 const i = a.indexOf('.')
-                return a.slice(0, i+1) + betaReduce(a.slice(i+1))
+                return a.slice(0, i+1) + betaReduce(a.slice(i+1), {outsideWrap: makeWrap(wrap, a.slice(0,i+1)) })
             } else {
-                return betaReduce(a)
+                return betaReduce(a, options)
             }
         }
     }
@@ -174,16 +191,57 @@ function betaReduce(e, outer_scope_awaits_lambda) {
     // now we caan worry about function application.
     // but first, a must be a lambda.
     if (a[0] !== λ) {
-        a = betaReduce(a, true)
+        a = betaReduce(a, 
+            { outer_scope_awaits_lambda: true, outsideWrap: makeWrap(wrap, '', gatherTerms(terms.slice(1))) })
         if (a[0] !== λ) { // we can't reduce further on this scope
-            return `(${a})(${terms.slice(1).map(x => betaReduce(x)).join(')(')})`
+
+            const superPush = history.push
+            history.push = _ => _
+
+            const result =  `(${a})` + terms.slice(1).map(x => {
+                const exp = betaReduce(x, { outer_scope_awaits_lambda })
+                return tokenize(exp).length === 1 ? ` ${exp} ` : `(${exp})`
+            }).join``
+
+            history.push = superPush
+
+            // damn it... this part is hard with the history thing
+            history.push(wrap(gatherTerms(getTerms(result))))
+            return result
         }
     }
 
     // if code reaches here, then a is a lambda and we can simply apply it to b.
     const applied = applyAB(a,b)
-    return betaReduce(   `(${applied})` + terms.slice(2).map(x => `(${x})`).join`` , outer_scope_awaits_lambda )
+    return betaReduce(   
+        `(${applied})` + gatherTerms(terms.slice(2)) ,
+        options )
 }
+
+
+
+
+function makeWrap(oldwrap, a,b) {
+    return s => oldwrap(dim(a) + ' ' + s + ' ' + dim(b||''))
+}
+
+
+
+
+function dim(x) {
+    return `<span class="dim" style="color:#777;"> ${x} </span>`
+}
+
+
+
+
+function gatherTerms(terms) {
+    return terms.map(x => tokenize(x).length === 1 ? ` ${x} ` : `(${x})`).join``
+}
+
+
+
+
 function applyAB(a,b) {
     /* 
         apply function a to expression b 
@@ -224,8 +282,9 @@ function applyAB(a,b) {
         inhead = t === λ ? true : t === '.' ? false : inhead
         if (level > 0) level += t === ')' ? -1 : t === '(' ? 1 : 0 
         if (inhead && level === 0 && t === variable) { level = 1 } 
-        // we be in level 0 in order to replace variables
-        return level === 0 && t === variable ? `(${b})` : t 
+        const replacement = tokenize(b).length == 1 ? b : `(${b})`
+        // we need to be in level 0 in order to replace variables
+        return level === 0 && t === variable ? replacement : t 
     }).join` `
 }
 

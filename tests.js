@@ -28,7 +28,7 @@ const inputOutput = [
         true = a
         true ttrue
         `,
-        'a(ttrue)',
+        'a ttrue',
     ],
 
     [

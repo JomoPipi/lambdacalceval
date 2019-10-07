@@ -92,24 +92,19 @@ Set_Up_Editor: {
     })
     editor.getSession().setValue(`
 
--- Welcome to my λ-calculus interpreter!
+    -- Welcome to my λ-calculus interpreter!
 
-true   = λ fst snd . fst 
-
-false  = λ fst snd . snd 
-
-if     = λ cond then else . cond then else 
-
-and    = λ a b . a (b true false) false 
-
-or     = λ a b . a true (b true false) 
+    true   = λ fst snd . fst 
     
-not    = λ cond . cond false true 
+    false  = λ fst snd . snd 
+    
+    if     = λ cond then else . cond then else 
+        
+    not    = λ cond . cond false true 
+    
+    -- Following the last variable assignment should be the expression to be evaluated:
 
--- Following the last variable assignment should be the expression to be evaluated:
-
-  if not true or not false and not false and not true huh what
-      
+  if (not true) huh what
 `)
     D('code').style.borderRadius = '10px'
     editor.setOptions(options);
@@ -125,7 +120,11 @@ not    = λ cond . cond false true
     }
 }
 
-
+D('showsteps').onclick = _ => showReductionSteps()
+function showReductionSteps() {
+  const steps = D('steps')
+  steps.style.maxHeight = steps.style.maxHeight ? null : ~~(steps.scrollHeight*20) + 'px'
+}
 
 let lightTheme = false
 function toggleTheme() { 
@@ -135,4 +134,6 @@ function toggleTheme() {
   document.body.classList.toggle('light-body')
   editor.setTheme( lightTheme ? "ace/theme/chrome" : "ace/theme/gruvbox");
   D('toggle-theme').classList.toggle('mybtndark')
+  D('showsteps').classList.toggle('mybtndark')
+  D('steps').classList.toggle('lt-steps')
 }
