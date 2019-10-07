@@ -1,5 +1,75 @@
 
 
+// -- booleans
+// true    = λa b.a
+// false   = λa b.b
+
+
+// -- numbers
+// 0       = λf x.x
+// 1       = succ 0
+// 2       = succ 1
+// 3       = succ 2
+// 4       = succ 3
+// 5       = succ 4
+// 6       = succ 5
+// 7       = succ 6
+// 8       = succ 7
+// 9       = succ 8
+// 10       = succ 9
+// 11       = succ 10
+// 12       = succ 11
+// 13       = succ 12
+// 14       = succ 13
+// 15       = succ 14
+// 16       = succ 15
+// 17       = succ 16
+// 18       = succ 17
+// 19       = succ 18
+// 20       = succ 19
+
+
+// -- pair
+// cons    = λa b select.select a b
+// head    = λpair.pair true
+// tail    = λpair.pair false
+// [1,2,3] = cons 1 (cons 2 3)
+// [0,1,2,3] = cons 0 [1,2,3]
+
+
+// -- logical operators
+// not     = λx.x false true
+// and     = λa b.a (b true false) false
+// or      = λa b.a true (b true false)
+// if      = λcond then else.cond then else
+
+
+// -- math
+// isZero  = λn.n false not false
+// succ    = λn f x.f(n f x)
+// times   = λa b f.a(b f)
+// pow     = λa b.b a
+// pred    = λn.head (n ‡ (cons 0 0))
+// sub     = λa b.b pred a
+// isOdd   = λn.n not false
+// isEven  = λn.n not true
+// <       = λa b. not (≤ b a)
+// ≤       = λm n. isZero (sub m n)
+// divide  = Y (λg q a b. < a b (cons q a) (g (succ q) (sub a b) b)) 0
+// -- utility
+// ‡       = λpair.cons (tail pair) (succ(tail pair)) -- transform pair
+// collatz = λn . if (isEven n) (pred n) (times 2 n)
+// Y = λg. (λx. g (x x)) (λx. g (x x)) 
+
+// -- try to get division to work
+// < 3 2
+
+
+
+
+
+
+
 const history = [], vars = {}
 
 D('code').focus()
