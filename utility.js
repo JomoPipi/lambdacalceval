@@ -56,7 +56,14 @@ function anyError(line, row=0, ioffset=0) {
     if (!matchedParenthesis(line)) 
         return doError("Mismatched parenthesis", row, ioffset)
     
-    for (let i=0, last, lastchar, realLast; i < line.length; i++) {
+    for (let i=0, last, lastchar, realLast; i <= line.length; i++) {
+
+        if (i === line.length) {
+            if (last === λ) {
+                return doError('Unterminated lambda head', row, i + ioffset)
+            } else
+                break 
+        }
 
         if (realLast === '(' && line[i] === ')') 
             return doError('Empty expression inside parentheses', row, i + ioffset)
@@ -67,6 +74,9 @@ function anyError(line, row=0, ioffset=0) {
             if (last === line[i]) 
                 return doError(`Syntax error: two ${last} in a row in expression`, row, i + ioffset)
             
+            if (last == null && line[i] == '.')
+                return doError(`Syntax error: '.' without λ`, row, i + ioffset)
+
             last = line[i]
             if (/[λ.]/.test(lastchar) && lastchar + line[i] !== '.λ') 
                 return doError(`Syntax error: ${lastchar+line[i]}`, row, i + ioffset)
