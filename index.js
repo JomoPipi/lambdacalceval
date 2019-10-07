@@ -102,8 +102,11 @@ function F(code) {
                             .trim()
 
     let exp = finalize(expression)
-
+    
     D('steps').innerHTML = '<br>' + history.join`<br><br>` + '<br><br>'
+
+    if (tokenize(expression).length === 1) 
+        return exp // you probably don't want to expand it in this case
 
     for (const key in vars) {
         try {
@@ -113,16 +116,16 @@ function F(code) {
             }
         } catch (e) { log('Hey look a error: ',e) }
     }
-
             
     return exp
 }
 
 
 
-
 function finalize(exp) {
-    return stripUselessParentheses(betaReduce(exp))
+    const expression = gatherTerms( getTerms(betaReduce(exp)) )
+
+    return stripUselessParentheses(expression)
         .replace(/λ +/g, λ)
         .replace(/ +λ/g, λ)
         .replace(/\. +/g,'.')
@@ -131,7 +134,7 @@ function finalize(exp) {
         .replace(/ +\(/g,'(')
         .replace(/\) +/g,')')
         .replace(/ +\)/g,')')
-        .replace(/(.λ|  )/g,' ')
+        .replace(/(\.λ|  )/g,' ')
 }
 
 

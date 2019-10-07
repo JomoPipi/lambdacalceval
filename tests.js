@@ -32,6 +32,24 @@ const inputOutput = [
     ],
 
     [
+        `
+        true   = λ fst snd . fst 
+        true what ok yea
+        `,
+        'what yea'
+    ],
+
+    [
+        `
+        0 = λa b.b
+        pair = λa b s.s a b
+
+        pair 0 0
+        `,
+        'λs.s(λa b.b)(λa b.b)'
+    ],
+
+    [
         `S = λw y x.y(w y x)
         P = λn.n Φ(λz.z 0 0)F
         Φ = λp z.z(S(p T))(p T)
@@ -43,6 +61,32 @@ const inputOutput = [
         P 5
         `,
         'λi j.i(i(i(i j)))'
+    ],
+
+    [
+        `
+        true = λa b.a
+        false = λa b.b
+        
+        + = λn f x.f(n f x)
+        
+        0 = false
+        1 = + 0
+        2 = + 1
+        3 = + 2
+        4 = + 3
+        
+        pair = λ a b s . s a b
+        
+        fst = λp.p true
+        snd = λp.p false
+        
+        transform = λp.pair (snd p) (+ (snd p))
+        pred = λn.fst(n transform (pair 0 0))
+        
+        pred 4
+        `,
+        '3'
     ],
 
     [
@@ -59,36 +103,12 @@ const inputOutput = [
     ]
 ]
 
+
+
+
 function runTests() {
     const fail = inputOutput.find(([input,output]) => !alphaEquivalent(F(input),output));
     (x => (alert(x),log(x),x) )(fail ? `failed with input = ${fail[0]}
         actual:  ${F(fail[0])}
         expected:${fail[1]}` : 'Passed all the tests!!')
-}
-
-function alphaEquivalent(a,b) {
-
-
-
-    if (a.length !== b.length) 
-        return alert('the lengths are not equal')
-    if ([...a].some((c,i) => 'λ.()'.includes(c) && c !== b[i])) 
-        return alert('some lambdas or dots or parenthesis are in the wrong place')
-        
-    return isEquiv(a,b) || alert('results are not alpha equivalent')
-}
-function isEquiv(a,b) {
-
-
-    const variables = new Set((a+b).split(/[λ.() ]+/))
-    for(let i=65,j=0; a[j]; i++) {
-        const c = String.fromCharCode(i);
-        if ('λ.() '.includes(a[j])) j++
-        if (variables.has(c)) continue
-        if (!variables.has(a[j]) || !variables.has(b[j])) { j++; continue }
-        a = replaceWith(a,a[j],c)
-        b = replaceWith(b,b[j],c)
-        j++
-    }
-    return a === b
 }

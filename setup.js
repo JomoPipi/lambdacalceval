@@ -137,3 +137,46 @@ function toggleTheme() {
   D('showsteps').classList.toggle('mybtndark')
   D('steps').classList.toggle('lt-steps')
 }
+
+
+
+
+
+
+
+
+
+function alphaEquivalent(a,b) {
+
+  if (a.length !== b.length) 
+      return alert('the lengths are not equal')
+  if ([...a].some((c,i) => 'λ.()'.includes(c) && c !== b[i])) 
+      return alert('some lambdas or dots or parenthesis are in the wrong place')
+      
+  return isEquiv(a,b) || alert('results are not alpha equivalent')
+}
+
+
+
+function isEquiv(a,b) {
+  // hey... checking functions for equality reduces to the halting problem.
+  const [aterms,bterms] = [a,b].map(getTerms)
+  const [al,bl] = [aterms.length,bterms.length]
+  if (al !== bl)
+      return false
+  
+  if (al > 1) 
+      return aterms.every((x,i) => isEquiv(x, bterms[i]))
+
+  const variables = new Set((a+b).split(/[λ.() ]+/))
+  for(let i=65,j=0; a[j]; i++) {
+      const c = String.fromCharCode(i);
+      if ('λ.() '.includes(a[j])) j++
+      if (variables.has(c)) continue
+      if (!variables.has(a[j]) || !variables.has(b[j])) { j++; continue }
+      a = replaceWith(a,a[j],c)
+      b = replaceWith(b,b[j],c)
+      j++
+  }
+  return a === b
+}
