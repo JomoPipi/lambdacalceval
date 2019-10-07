@@ -154,7 +154,7 @@ function betaReduce(e, options) {
 
     if (a !== terms[0] && !terms[0].includes(a)) {
         const newExp = `(${a})` + gatherTerms(terms.slice(1))
-        if (history.slice(-1)[0].includes(newExp))
+        if (history.length && history.slice(-1)[0].includes(newExp))
             history.pop()
             
         history.push( wrap( newExp ) )
