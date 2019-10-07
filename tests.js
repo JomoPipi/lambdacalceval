@@ -51,8 +51,7 @@ const inputOutput = [
         3 = λa b.a(a(a b))
         + = λw y x.y(w y x)
         M = λx y.(λz.x(y z))
-        ${'`'} = λf. ... create the "create infix operator"
-        * = ${'`'}M - infix multiplication
+        * = ${'`'}M -- infix multiplication, not possible!!
         P = λx y.y x
 
         P 2 3`,

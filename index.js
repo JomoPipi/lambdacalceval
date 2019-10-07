@@ -1,33 +1,35 @@
 
-// failing test:
-// cons = λ b c a . a b c
-// cons a b -> λa.a a b
 
 const history = [], vars = {}
 
 D('code').focus()
-const improper = x => `<span style="color:red;">${x}</span>`
+const improper = x => `<span style="color:#F44;">${x}</span>`
 
 function F(code) {
+    
+    // clear variables and reduction steps from the last time
     history.length = 0
-    // clear variables from the last time
     for (let i in vars) delete vars[i]
-    const lines = code.split`\n`
-                      .map(s => s.split("--")[0]) // remove comments
-                      .filter(x=>x.trim())
+
+    const allLines = code.split`\n`
+                         .map(s => s.split("--")[0]) // remove comments (don't remove this one)
+    
+    let maybeError
+    if (maybeError = containsErrors(allLines)) 
+        return improper(maybeError) // compiler should tell you what's up
+                    
+    const lines = allLines.filter(x=>x.trim())
                       
     let lastLineWithEqualSign = lines.reduce((a,v,i) => v.includes('=') ? i : a, -1)
     
-    const sections = lines.slice(0,lastLineWithEqualSign+1).map(v => 
+    lines.slice(0,lastLineWithEqualSign+1).forEach(v => 
         (([n,v]) => (vars[n] = v,[n,v])) // parse variable declarations
-        (v.split`=`.map(x=>x.trim()) ))
+        ( v.split`=`.map(x=>x.trim()) ))
 
     const expression = lines.slice(lastLineWithEqualSign+1)
                             .map(s=>s.trim())
                             .filter(s=>s).join` `
                             .trim()
-                            
-    if (sections.some(sec=>sec.length!==2)) return improper('improper code')
 
     let exp = finalize(expression)
 
@@ -66,7 +68,6 @@ function betaReduce(e, outer_scope_awaits_lambda) {
     const V = x => (x in vars ? V(vars[x]) : x)
     const terms = getTerms(e)
 
-    /* error checking for debug later */ if (terms.some(x=>!x)) throw 'find out what caused this'
     /* implement later if something goes wrong */ // if (!matchedParens(e)) throw 'what happened here'
 
     let a = V(terms[0])
