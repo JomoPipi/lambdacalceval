@@ -98,7 +98,7 @@ Set_Up_Editor: {
     })
     editor.getSession().setValue(`
 0 = λ a b . b
-1 = λ a b . a b
+1 = λ a b .= a b
 2 = λ a b . a (a b)
 addOne = λ w y x . y ( w y x )
 

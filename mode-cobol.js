@@ -20,6 +20,9 @@ var CobolHighlightRules = function() {
             token : keywordMapper,
             regex : "[λ.]"
         }, {
+            token : "variable",
+            regex : "(?=.*=)(.+?(?=\=))"
+        }, {
             token : "string",
             regex : "[(]"
         }, {
@@ -28,9 +31,6 @@ var CobolHighlightRules = function() {
         }, {
             token : "string",
             regex : "[)]"
-        }, {
-            token : "variable",
-            regex : "(?=.*=)(^[^=]*)"
         }, {
             token : "text",
             regex : "\\s+"
