@@ -65,6 +65,17 @@ const inputOutput = [
 
     [
         `
+        4 = λa b.a(a(a(a b)))
+        mul = λa b f. a (b f)
+        2 = λa b.a(a b)
+
+        mul 2 2
+        `,
+        '4'
+    ],
+
+    [
+        `
         true = λa b.a
         false = λa b.b
         

@@ -102,7 +102,14 @@ function F(code) {
                             .trim()
 
     let exp = finalize(expression)
-    
+
+    const escapeHTML = x => x.split(/\<.*?\>/).join``
+    while(escapeHTML(history[history.length-1]) === exp) {
+        log ('here:  ',history[history.length-1])
+        history.pop() // remove duplicate steps towards the end of reduction
+    }
+    history.push(exp)
+
     D('steps').innerHTML = '<br>' + history.join`<br><br>` + '<br><br>'
 
     if (tokenize(expression).length === 1) 
@@ -191,28 +198,27 @@ function betaReduce(e, options) {
         }
     }
 
-    // now we caan worry about function application.
-    // but first, a must be a lambda.
     if (a[0] !== λ) {
         a = betaReduce(a, 
             { outer_scope_awaits_lambda: true, outsideWrap: makeWrap(wrap, '', gatherTerms(terms.slice(1))) })
         if (a[0] !== λ) { // we can't reduce further on this scope
 
-            const superPush = history.push
-            history.push = _ => _
+            const result = gatherTerms(terms.slice(1).reduce((a,term,i) => 
 
-            const result =  `(${a})` + terms.slice(1).map(x => {
-                const exp = betaReduce(x, { outer_scope_awaits_lambda })
-                return tokenize(exp).length === 1 ? ` ${exp} ` : `(${exp})`
-            }).join``
+                [...a, betaReduce(term, { 
+                    outsideWrap: 
+                        makeWrap(   wrap,   gatherTerms(a),   gatherTerms(terms.slice(1).slice(i+2))   )
+                })]
 
-            history.push = superPush
+            , [a]))
 
-            // damn it... this part is hard with the history thing
-            history.push(wrap(gatherTerms(getTerms(result))))
             return result
         }
     }
+
+
+
+
 
     // if code reaches here, then a is a lambda and we can simply apply it to b.
     const applied = applyAB(a,b)
@@ -225,7 +231,7 @@ function betaReduce(e, options) {
 
 
 function makeWrap(oldwrap, a,b) {
-    return s => oldwrap(dim(a) + ' ' + s + ' ' + dim(b||''))
+    return s => oldwrap(dim(a + '(') + s + dim(')' + (b||'')))
 }
 
 
@@ -234,6 +240,9 @@ function makeWrap(oldwrap, a,b) {
 function dim(x) {
     return `<span class="dim" style="color:#777;"> ${x} </span>`
 }
+// function undim(x) {
+//     return `<span class="dim" style="color:#777;"> ${x} </span>`
+// }
 
 
 
