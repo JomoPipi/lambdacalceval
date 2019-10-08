@@ -82,7 +82,7 @@ function F(code) {
     for (let i in vars) delete vars[i]
 
     const allLines = code.split`\n`
-                         .map(s => s.split("--")[0]) // remove comments (don't remove this one)
+                         .map(s => s.split("--")[0]) // remove comments (but not this one)
     
     let maybeError
     if (maybeError = containsErrors(allLines)) 
@@ -90,7 +90,7 @@ function F(code) {
                     
     const lines = allLines.filter(x=>x.trim())
                       
-    let lastLineWithEqualSign = lines.reduce((a,v,i) => v.includes('=') ? i : a, -1)
+    const lastLineWithEqualSign = lines.reduce((a,v,i) => v.includes('=') ? i : a, -1)
     
     lines.slice(0,lastLineWithEqualSign+1).forEach(v => 
         (([n,v]) => (vars[n] = v,[n,v])) // parse variable declarations
@@ -103,17 +103,18 @@ function F(code) {
 
     let exp = finalize(expression)
 
-    const escapeHTML = x => x.split(/\<.*?\>/).join``
-    while(escapeHTML(history[history.length-1]) === exp) {
-        log ('here:  ',history[history.length-1])
-        history.pop() // remove duplicate steps towards the end of reduction
-    }
+    if (tokenize(expression).length === 1) 
+        return exp // you probably want it expanded, if it's a definition, in this case
+
+
+    const index = history.reduceRight((a,v,i) => a == null && 
+    tokenize(finalStep(escapeHTML(v))).every((x,i) => tokenize(exp)[i] === x) ? i : a, null)
+
+    if (index) history.splice(index, Infinity)
+    
     history.push(exp)
 
     D('steps').innerHTML = '<br>' + history.join`<br><br>` + '<br><br>'
-
-    if (tokenize(expression).length === 1) 
-        return exp // you probably don't want to expand it in this case
 
     for (const key in vars) {
         try {
@@ -130,9 +131,17 @@ function F(code) {
 
 
 function finalize(exp) {
-    const expression = gatherTerms( getTerms(betaReduce(exp)) )
+    return finalStep( betaReduce( exp ) )
+}
 
-    return stripUselessParentheses(expression)
+
+
+
+function finalStep(exp) {
+    return stripUselessParentheses(
+                gatherTerms(
+                    getTerms(
+                        exp)))
         .replace(/λ +/g, λ)
         .replace(/ +λ/g, λ)
         .replace(/\. +/g,'.')
@@ -164,7 +173,8 @@ function betaReduce(e, options) {
 
     if (a !== terms[0] && !terms[0].includes(a)) {
         const newExp = `(${a})` + gatherTerms(terms.slice(1))
-        if (history.length && history.slice(-1)[0].includes(newExp))
+
+        while (history.length && escapeHTML(history.slice(-1)[0]).includes(newExp))
             history.pop()
             
         history.push( wrap( newExp ) )
@@ -230,8 +240,10 @@ function betaReduce(e, options) {
 
 
 
-function makeWrap(oldwrap, a,b) {
-    return s => oldwrap(dim(a + '(') + s + dim(')' + (b||'')))
+function makeWrap(oldwrap, a, b) {
+    return s => oldwrap(
+        dim((a||'') + '(') + s +
+        dim(')' + (b||''))) 
 }
 
 
@@ -240,15 +252,20 @@ function makeWrap(oldwrap, a,b) {
 function dim(x) {
     return `<span class="dim" style="color:#777;"> ${x} </span>`
 }
-// function undim(x) {
-//     return `<span class="dim" style="color:#777;"> ${x} </span>`
-// }
 
 
 
 
 function gatherTerms(terms) {
     return terms.map(x => tokenize(x).length === 1 ? ` ${x} ` : `(${x})`).join``
+}
+
+
+
+
+function escapeHTML(x) { 
+    // this works because I replace the user's default <> symbols to unicode.
+    return x.split(/\<.*?\>/).join`` 
 }
 
 

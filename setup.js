@@ -80,31 +80,31 @@ Set_Up_Editor: {
         editor.resize();
       if (fromServer) return;
       const s = editor.getValue()
-      if (e.action === 'insert' && e.lines.some(l => /\\/.test(l))) {
+      if (e.action === 'insert' && e.lines.some(l => /[\\<>]/.test(l))) {
         fromServer = true
         const {row, column} = editor.getCursorPosition()
         editor.setValue(s.split`\n`.map(s => 
-          replaceWith(s,'\\',λ) ).join`\n`)
+          replaceWith(
+            replaceWith(
+              replaceWith(
+                s,
+              '>','˃')
+            ,'<','˂')
+          ,'\\',λ) ).join`\n`)
         editor.clearSelection()
         editor.selection.moveTo(row, column)
         fromServer = false
       }
     })
     editor.getSession().setValue(`
-
--- Welcome to my λ-calculus interpreter!
-
-true   = λ fst snd . fst 
-
-false  = λ fst snd . snd 
-
-if     = λ cond then else . cond then else 
-    
-not    = λ cond . cond false true 
+0 = λ a b . b
+1 = λ a b . a b
+2 = λ a b . a (a b)
+addOne = λ w y x . y ( w y x )
 
 -- Following the last variable assignment should be the expression to be evaluated:
 
-  if (not true) huh what
+    addOne 1
 `)
     D('code').style.borderRadius = '10px'
     editor.setOptions(options);
