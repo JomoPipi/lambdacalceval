@@ -15,10 +15,13 @@ function containsErrors(allLines) {
         const col = line.indexOf('=')
         const col2 = line.lastIndexOf('=')
 
-        const [name,value] = [line.slice(0,col2), line.slice(col2+1)].map(x=>x.trim())
+        if (col !== col2) 
+            return doError("Names shouldn't contain equal signs, because we use them to declare names.", col2)
+
+        const [name,value] = line.split`=`.map(x=>x.trim())
 
         if (/[λ.() ]/.test(name)) 
-            return doError('Names shouldn\'t contains any of these characers <code>"λ.() "</code>.', 0)
+            return doError('Names shouldn\'t contains any of these characers <code>"λ.() ="</code>.', 0)
 
         const error = anyError(value, row, col+1)
         if (error) return error

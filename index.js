@@ -94,7 +94,7 @@ function F(code) {
     
     lines.slice(0,lastLineWithEqualSign+1).forEach(v => 
         (([n,v]) => (vars[n] = v,[n,v])) // parse variable declarations
-        ( [v.slice(0,v.lastIndexOf('=')), v.slice(v.lastIndexOf('=')+1)].map(x=>x.trim()) ))
+        ( v.split`=`.map(x=>x.trim()) ))
 
     const expression = lines.slice(lastLineWithEqualSign+1)
                             .map(s=>s.trim())
