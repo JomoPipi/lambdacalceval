@@ -111,6 +111,60 @@ const inputOutput = [
 
         P 2 3`,
         'λb e.b(b(b(b(b(b(b(b e)))))))'
+    ],
+
+    [
+        `
+TR = λp.[] (snd p) (+1(snd p))
+
+\`   = λ a op b . op a b -- the infixing operator
+[]  = λ a b s . s a b
+fst = λ p . p true
+snd = λ p . p false
+
+
+true  = λ a b . a
+false = λ a b . b
+
+and   = λ a b . a (b true false) false
+or    = λ a b . a true (b true false)
+not   = λ x . x false true
+if    = λcond then else . cond then else
+
++1  = λ n f x . f (n f x)
+-1  = λ n . fst (n TR ([] 0 0))
+-   = λ a b . b -1 a
++   = λ a b . a +1 b
+*   = λ a b f . a (b f)
+/   = λ a b. if (\` a ˂ b) 0 (+1 (/ (\` a - b) b) )
+
+
+
+0  = false
+1  = +1 0
+2  = +1 1
+3  = +1 2
+4  = +1 3
+5  = +1 4
+6  = +1 5
+7  = +1 6
+8  = +1 7
+9  = +1 8
+10 = +1 9
+
+＝0 = λn.n (λx.false) true
+
+˃   = λ a b . not (＝0 (\` a - b))
+˂   = λ a b . not (＝0 (\` b - a))
+
+＝  = λ a b . \` (not (˂ a b)) and (not (˃ a b))
+
+
+
+
+\` 7 / 3
+        `, '2'
+
     ]
 ]
 
