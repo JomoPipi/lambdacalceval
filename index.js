@@ -208,7 +208,7 @@ function betaReduce(e, options) {
         } else {
             if (a[0] === λ) {
                 const i = a.indexOf('.')
-                return a.slice(0, i+1) + betaReduce(a.slice(i+1), {outsideWrap: makeWrap(wrap, a.slice(0,i+1)) })
+                return a.slice(0, i+1) + betaReduce(a.slice(i+1), {outsideWrap: makeWrap(wrap, a.slice(0,i+1), '', true) })
             } else {
                 return betaReduce(a, options)
             }
@@ -247,10 +247,11 @@ function betaReduce(e, options) {
 
 
 
-function makeWrap(oldwrap, a, b) {
+function makeWrap(oldwrap, a, b, NoP) {
+    const [l,r] = NoP ? ['',''] : '()'
     return s => oldwrap(
-        dim((a||'') + '(') + s +
-        dim(')' + (b||''))) 
+        dim((a||'') + l) + s +
+        dim(r + (b||''))) 
 }
 
 
