@@ -112,7 +112,14 @@ function F(code) {
 
     if (index) history.splice(index, Infinity)
     
-    history.push(exp)
+    const hstry = history.map(escapeHTML)
+    const finalResultAndStats = exp + 
+    '<br> <br> <br> <span style="display: inline-block; text-align:left; font-size: 1.5em;">' + 
+    'Reduction steps: ' + hstry.length +
+    '<br> Number of tokens:  ' + hstry.reduce((a,v) => a + tokenize(v).length, 0) +
+    '<br> Number of characters:  ' + hstry.reduce((a,v) => a + v.replace(/ /g,'').length, 0) + '</span>'
+
+    history.push(finalResultAndStats)
 
     D('steps').innerHTML = '<br>' + history.join`<br><br>` + '<br><br>'
 
