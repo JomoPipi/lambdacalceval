@@ -83,14 +83,20 @@ Set_Up_Editor: {
       if (e.action === 'insert' && e.lines.some(l => /[\\<>]/.test(l))) {
         fromServer = true
         const {row, column} = editor.getCursorPosition()
-        editor.setValue(s.split`\n`.map(s => 
-          replaceWith(
+        
+        // keep the shape of the screen intact, because editor.setValue removes all the text before replacing it
+        D('code-ghost').style.height = D('code').style.height
+
+        editor.setValue(
+          s.split`\n`.map(s => 
+          replaceWith( 
             replaceWith(
               replaceWith(
                 s,
               '>','˃')
             ,'<','˂')
           ,'\\',λ) ).join`\n`)
+        D('code-ghost').style.height = 0
         editor.clearSelection()
         editor.selection.moveTo(row, column)
         fromServer = false
