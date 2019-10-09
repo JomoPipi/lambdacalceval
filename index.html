@@ -156,3 +156,85 @@ checkFib = λ n . ` (fib n) ＝ (optimizedFib n)
 
 -- 0 1 1 2 3 5
 checkFib 4 -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- other code -->
+
+
+
+<!-- true  = λ a b . a
+false = 0
+and   = λ a b . a (b true 0) 0
+not   = λ b . b false true
+or    = λ a b . a true (b true 0)
+
+`     = λ a op b . op a b
+§     = λ p.[](snd p)(+(snd p))
+[]    = λ a b s . s a b
+fst   = λ p . p true
+snd   = λ p . p false
+
+0 = λ a b . b
+1 = + 0
+2 = + 1
+3 = + 2
+4 = + 3
+5 = + 4
+6 = + 5
+7 = + 6
+8 = + 7
+9 = + 8
+10 = + 9
+
++   = λ w y x . y ( w y x )
+-1  = λ n . fst (n § ([] 0 0))
+-   = λ a b . b -1 a
+＝0 = λ n . n (λx.false) true
+≥   = λ a b . ＝0 (` b - a)
+˃   = λ a b . not (` b ≥ a)
+≤   = λ a b . ＝0 (` a - b)
+˂   = λ a b . not (` a ≥ b)
+＝  = λ a b . ＝0 ((- a b) + (- b a)) -- less efficient, but more readable: λ a b . and (≤ a b) (≥ a b)
+
+-- 1: less, 2: equal, 3: greater
+cmp = λ a b . (` a ˂ b) 1 ((` a ˃ b) 3 2) 
+
+-- define integers
+-- positives: (true, n)
+-- negatives: (false,n)
+
+-- "construct" positive
+pos = λ n . [] true n
+
+-- "construct" negative
+neg = λ n . [] false n
+
+≥0  = λ n . fst n
+
+˂0  = λ n . not (≥0 n)
+
+-- cmpInts = λ a b . 
+
+-- addInts = λ a b . 
+
+λa b. false a -->
+

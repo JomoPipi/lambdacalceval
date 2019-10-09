@@ -145,7 +145,7 @@ function finalize(exp) {
 
 
 function finalStep(exp) {
-    return stripUselessParentheses(
+    return curryStep(stripUselessParentheses(
                 gatherTerms(
                     getTerms(
                         exp)))
@@ -156,8 +156,57 @@ function finalStep(exp) {
         .replace(/\( +/g,'(')
         .replace(/ +\(/g,'(')
         .replace(/\) +/g,')')
-        .replace(/ +\)/g,')')
-        .replace(/(\.λ|  )/g,' ')
+        .replace(/ +\)/g,')'))
+}
+
+
+
+
+function curryStep(exp) {
+    // old way: return exp.replace(/(\.λ|  )/g,' ')   
+    // problem:
+    // false = λa b.b
+    // λa b. false a   ->   λa b b.b
+
+    // solution
+    // if variables in heads are duplicated, we just have to rename the "victims" of duplication.
+    // ex: λa b. false a   ->   λa x b.b
+    const allvars = new Set(tokenize(exp).filter(x => !/[.λ()]/.test(x) ))
+    const nextFree = _ => {
+        for(let i = 97;;i++) {
+            const c = String.fromCharCode(i)
+            if (!allvars.has(c)) {
+                allvars.add(c)
+                return c
+            }
+        }
+    }
+    exp = exp.replace(/(\.λ|  )/g,' ')   
+    // clear out the duplicates in the heads
+    let result = ''
+    for (let i = 0, headBuffer = ''; i < exp.length; i++) {
+        if (exp[i] === '.' ) {
+            result += clean( headBuffer ) + '.'
+            headBuffer = ''
+        }
+        else if (exp[i] === 'λ') headBuffer = 'λ'
+        
+        else if (headBuffer) headBuffer += exp[i]
+        
+        else result += exp[i]
+    }
+    function clean(head) {
+        // first term is λ, so remove it, for now
+        const h = head.slice(1).trim()
+        const terms = h.split(/ +/)
+        for (let i = 0; i < terms.length; i++) 
+            if (terms.lastIndexOf(terms[i]) !== i) {
+                terms[i] = nextFree()
+                return clean(λ + terms.join` `)
+            }
+        return head // no duplicates found
+    }
+    return result 
 }
 
 

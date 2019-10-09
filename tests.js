@@ -115,6 +115,14 @@ const inputOutput = [
 
     [
         `
+        false = λa b.b
+        λa b. false a
+        `,
+        'λa x b.b'
+    ],
+
+    [
+        `
 TR = λp.[] (snd p) (+1(snd p))
 
 \`   = λ a op b . op a b -- the infixing operator
