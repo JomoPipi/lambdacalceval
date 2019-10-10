@@ -22,7 +22,7 @@ function runCode() {
   setTimeout(_ => (
     D('output').innerHTML = completeReduction( window.ace.edit(D('code')).getSession().getValue() ), 
     D('code').focus()),
-    300 + Math.random()*200|0)
+    100 + Math.random()*200|0)
 }
 
 
@@ -51,11 +51,10 @@ Set_Up_Editor: {
       showPrintMargin: false, // hides the vertical limiting strip
       fontSize: "100%",
       maxLines: 10000,
-      autoScrollEditorIntoView: true,
-      showGutter:false,
+      // autoScrollEditorIntoView: true, // doesn't work well with long code, on mac
+      showGutter:false, // perhaps it will be toggle-able in the future
       tabSize: 2
     }
-    editor.renderer.setShowGutter(false);
     editor.setAutoScrollEditorIntoView(true);
     // remove pretentious punctuation (that might come from a phone):
     let fromServer

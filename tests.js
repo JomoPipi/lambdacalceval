@@ -199,7 +199,6 @@ function runTests() {
 
 
 // my current code:
-
 // true  = λ a b . a
 // false = 0
 // and   = λ a b . a (b true 0) 0
@@ -302,7 +301,6 @@ function runTests() {
 
 // frac＝ = λ a b .`(＝ (num a) (num b))   and   (＝ (den a) (den b))
 
-
-// f
-
+// -- are a and b both divisible by n?
+// isCommonDiv = λ a b n . and (＝0 (% a n)) (＝0 (% b n))
 
