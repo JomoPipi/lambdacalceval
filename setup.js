@@ -51,7 +51,6 @@ Set_Up_Editor: {
       showPrintMargin: false, // hides the vertical limiting strip
       fontSize: "100%",
       maxLines: 10000,
-      // autoScrollEditorIntoView: true, // doesn't work well with long code, on mac
       showGutter:false, // perhaps it will be toggle-able in the future
       tabSize: 2
     }
