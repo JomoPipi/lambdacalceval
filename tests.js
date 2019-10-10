@@ -187,3 +187,122 @@ function runTests() {
     actual:  ${fail[0]}
     expected:${fail[1]}` : 'Passed all the tests!! \n Time elapsed for all tests: ' + (Date.now() - then) + ' ms')
 }
+
+
+
+
+
+
+
+
+
+
+
+// my current code:
+
+// true  = λ a b . a
+// false = 0
+// and   = λ a b . a (b true 0) 0
+// not   = λ b . b false true
+// or    = λ a b . a true (b true 0)
+// xor   = λ a b . a (b false true) (b true false)
+
+// Y     = λ y . (λx.y(x x)) (λx.y(x x)) 
+// `     = λ a op b . op a b
+// §     = λ p.[](snd p)(+(snd p))
+// []    = λ a b s . s a b 
+// [     = λ a , b ] s . s a b -- different list syntax
+// fst   = λ p . p true
+// snd   = λ p . p false
+
+// 0 = λ a b . b
+// 1 = + 0
+// 2 = + 1
+// 3 = + 2
+// 4 = + 3
+// 5 = + 4
+// 6 = + 5
+// 7 = + 6
+// 8 = + 7
+// 9 = + 8
+// 10 = + 9
+
+// +   = λ w y x . y ( w y x )
+// *   = λ a b f . a (b f)
+// -1  = λ n . fst (n § ([] 0 0))
+// -   = λ a b . b -1 a
+// ＝0 = λ n . n (λx.false) true
+// ≥   = λ a b . ＝0 (` b - a)
+// ˃   = λ a b . not (` b ≥ a)
+// ≤   = λ a b . ＝0 (` a - b)
+// ˂   = λ a b . not (` a ≥ b)
+// ＝  = λ a b . ＝0 ((- a b) + (- b a)) -- less efficient, but more readable: λ a b . and (≤ a b) (≥ a b)
+
+// -- 1: less, 2: equal, 3: greater
+// cmp = λ a b . (` a ˂ b) 1 ((` a ˃ b) 3 2)
+
+// -- define integers
+// -- positives: (true, n)
+// -- negatives: (false,n)
+
+// -- "construct" positive
+// pos = λ n . [] true n
+
+// -- "construct" negative
+// neg = λ n . [] false n
+
+// ≥0  = fst
+
+// ˂0  = λ n . not (≥0 n)
+
+// -- cmpInts = λ a b .
+
+// abs = snd
+
+// invert = λ n . [(˂0 n),(abs n)] -- additive inverse
+
+// -- add +_5 -_9
+
+// -- compact 
+// add = λ a b . (λ A B C D . (xor C D)   ( (˃ A B) ([] C (- A B)) [] D (- B A) )   ([] C (A + B))) (abs a) (abs b) (≥0 a) (≥0 b)
+// -- Reduction steps: 590, Number of tokens: 73355, Number of characters: 111316
+
+// -- sub = λ a b . add a ([] (˂0 b) (abs b))
+
+// sub = λ a b . add a (invert b)
+
+
+// /% = λ r a b . ˂ a b 0 (+ (r (- a b) b))
+
+// %% = λ r a b . ˂ a b a (+ (r (- a b) b))
+
+// / = λ a b . Y /% a b
+// % = λ a b . Y %% a b
+
+// factorial% = λ r n . ＝0 n 1 (* n (r (-1 n)))
+
+// factorial = λ n . Y factorial% n
+
+// -- 6. Define the rational numbers as pairs of integers.
+// -- 7. Define functions for the addition, subtraction, multiplication and division of
+// -- rationals
+
+
+// frac = λ n d . simplify ( (xor (≥0 n) (≥0 d))   ([] (neg (abs n)) (abs d))   ([] (abs n) (abs d)) )
+
+// -- simplify = λ f . (λ n d . ) (num f) (den f)
+
+// num = fst
+// den = snd
+
+// +_5 = pos 5
+// -_4 = neg 4
+// -_5 = neg 5
+// +_4 = pos 4
+
+// frac＝ = λ a b .`(＝ (num a) (num b))   and   (＝ (den a) (den b))
+
+
+// f
+
+

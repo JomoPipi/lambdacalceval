@@ -5,7 +5,7 @@ const HISTORY = [], VARIABLES = {}
 D('code').focus()
 
 function completeReduction(code) {
-
+    const then = Date.now()
     const allLines = code.split`\n`.map(s => s.split("--")[0]) 
     const improper = x =>                       // error style
         `<span style="color:#f44;">${x}</span>` 
@@ -21,7 +21,7 @@ function completeReduction(code) {
 
     const expression = maybeError.value         // no syntax error detected
     let exp = finalize(expression)
-    updateHistory_complete(exp)
+    updateHistory(exp, then)
 
     if (tokenize(expression).length === 1)      // you probably want it expanded, if it's a definition, in this case
         return exp                             
@@ -29,8 +29,7 @@ function completeReduction(code) {
     for (const key in VARIABLES) {
         try { // will fail if thee value is divergent
             if (isEquiv(finalize(VARIABLES[key]), exp)) {
-                exp = key // we want to replace the exp with a variable name, if possible.
-                break
+                return key // this will probably be simpler than the expression.
             }
         } catch (e) { log('Hey look a error: ',e) }
     }
@@ -378,7 +377,7 @@ function stripUselessParentheses(t) {
 
 
 
-function updateHistory_complete(exp) {
+function updateHistory(exp, then) {
     const hstry = HISTORY.map(escapeHTML)
     const index = hstry.reduceRight((a,v,i) =>  // find the first index, from the right, where exp === history[i]
         a == null && tokenize(finalStep(v))
@@ -390,100 +389,12 @@ function updateHistory_complete(exp) {
     
     const finalResultAndStats = exp +           // enjoy some nice measurements
     '<br> <br> <br> <span style="display: inline-block; text-align:left; font-size: 1.5em;">' + 
-    'Reduction steps: ' + hstry.length +
-    '<br> Number of tokens:  ' + hstry.reduce((a,v) => a + tokenize(v).length, 0) +
-    '<br> Number of characters:  ' + hstry.reduce((a,v) => a + v.replace(/ /g,'').length, 0) + '</span>'
+    'Reduction steps:            ' + hstry.length +
+    '<br> Number of tokens:      ' + hstry.reduce((a,v) => a + tokenize(v).length, 0) +
+    '<br> Number of characters:  ' + hstry.reduce((a,v) => a + v.replace(/ /g,'').length, 0) +
+    '<br> Time elapsed:          ' + (Date.now() - then) + 'ms </span>'
 
     HISTORY.push(finalResultAndStats)
 
     D('steps').innerHTML = '<br>' + HISTORY.join`<br><br>` + '<br><br>'
 }
-
-
-
-
-
-// -- just putting this lambda calculus code somewhere:
-
-// true  = λ a b . a
-// false = 0
-// and   = λ a b . a (b true 0) 0
-// not   = λ b . b false true
-// or    = λ a b . a true (b true 0)
-// xor   = λ a b . a (b false true) (b true false)
-
-// `     = λ a op b . op a b
-// §     = λ p.[](snd p)(+(snd p))
-// []    = λ a b s . s a b 
-// [     = λ a , b ] s . s a b -- different list syntax
-// fst   = λ p . p true
-// snd   = λ p . p false
-
-// 0 = λ a b . b
-// 1 = + 0
-// 2 = + 1
-// 3 = + 2
-// 4 = + 3
-// 5 = + 4
-// 6 = + 5
-// 7 = + 6
-// 8 = + 7
-// 9 = + 8
-// 10 = + 9
-
-// +   = λ w y x . y ( w y x )
-// -1  = λ n . fst (n § ([] 0 0))
-// -   = λ a b . b -1 a
-// ＝0 = λ n . n (λx.false) true
-// ≥   = λ a b . ＝0 (` b - a)
-// ˃   = λ a b . not (` b ≥ a)
-// ≤   = λ a b . ＝0 (` a - b)
-// ˂   = λ a b . not (` a ≥ b)
-// ＝  = λ a b . ＝0 ((- a b) + (- b a)) -- less efficient, but more readable: λ a b . and (≤ a b) (≥ a b)
-
-// -- 1: less, 2: equal, 3: greater
-// cmp = λ a b . (` a ˂ b) 1 ((` a ˃ b) 3 2)
-
-// -- define integers
-// -- positives: (true, n)
-// -- negatives: (false,n)
-
-// -- "construct" positive
-// pos = λ n . [] true n
-
-// -- "construct" negative
-// neg = λ n . [] false n
-
-// ≥0  = fst
-
-// ˂0  = λ n . not (≥0 n)
-
-// -- cmpInts = λ a b .
-
-// abs = snd
-
-// invert = λ n . [(˂0 n),(abs n)] -- additive inverse
-// +_5 = pos 5
-// -_9 = neg 9
-// +_9 = pos 9
-// -_4 = neg 4
-// -- add +_5 -_9
-
-// -- verbose 
-// -- add = λ a b . (xor(≥0 a)(≥0 b)) ((˃ (abs a) (abs b)) ([] (≥0 a) (- (abs a) (abs b))) ([] (≥0 b) (- (abs b) (abs a)))) ( [] (≥0 a) ((abs a) + (abs b)) )
-// -- Reduction steps: 586, Number of tokens: 74228, Number of characters: 112087
-
-// -- dry, readable
-// -- add = λ a b . (λ A B C D . (` C xor D)   ( (` A ˃ B) ([ C , (` A - B) ]) [ D , (` B - A) ] )   ([ C , (A + B) ])) (abs a) (abs b) (≥0 a) (≥0 b)
-// -- Reduction steps: 600, Number of tokens: 77567, Number of characters: 114691
-
-
-// -- compact 
-// add = λ a b . (λ A B C D . (xor C D)   ( (˃ A B) ([] C (- A B)) [] D (- B A) )   ([] C (A + B))) (abs a) (abs b) (≥0 a) (≥0 b)
-// -- Reduction steps: 590, Number of tokens: 73355, Number of characters: 111316
-
-// -- sub = λ a b . add a ([] (˂0 b) (abs b))
-
-// sub = λ a b . add a (invert b)
-
-// sub +_5 -_4
