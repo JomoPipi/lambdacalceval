@@ -180,8 +180,10 @@ if    = λcond then else . cond then else
 
 
 function runTests() {
-    const fail = inputOutput.find(([input,output]) => !alphaEquivalent(F(input),output));
-    (x => (alert(x),log(x),x) )(fail ? `failed with input = ${fail[0]}
-        actual:  ${F(fail[0])}
-        expected:${fail[1]}` : 'Passed all the tests!!')
+    const then = Date.now()
+    const fail = inputOutput.map(([i,o]) => [completeReduction(i), o]).find(([i,o]) => !alphaEquivalent(i,o));
+    (x => (alert(x), log(x), x) )
+    (fail ? `failed with input = ${fail[0]}
+    actual:  ${fail[0]}
+    expected:${fail[1]}` : 'Passed all the tests!! \n Time elapsed for all tests: ' + (Date.now() - then) + ' ms')
 }

@@ -1,145 +1,57 @@
 
 
-// -- booleans
-// true    = λa b.a
-// false   = λa b.b
-
-
-// -- numbers
-// 0       = λf x.x
-// 1       = succ 0
-// 2       = succ 1
-// 3       = succ 2
-// 4       = succ 3
-// 5       = succ 4
-// 6       = succ 5
-// 7       = succ 6
-// 8       = succ 7
-// 9       = succ 8
-// 10       = succ 9
-// 11       = succ 10
-// 12       = succ 11
-// 13       = succ 12
-// 14       = succ 13
-// 15       = succ 14
-// 16       = succ 15
-// 17       = succ 16
-// 18       = succ 17
-// 19       = succ 18
-// 20       = succ 19
-
-
-// -- pair
-// cons    = λa b select.select a b
-// head    = λpair.pair true
-// tail    = λpair.pair false
-// [1,2,3] = cons 1 (cons 2 3)
-// [0,1,2,3] = cons 0 [1,2,3]
-
-
-// -- logical operators
-// not     = λx.x false true
-// and     = λa b.a (b true false) false
-// or      = λa b.a true (b true false)
-// if      = λcond then else.cond then else
-
-
-// -- math
-// isZero  = λn.n false not false
-// succ    = λn f x.f(n f x)
-// times   = λa b f.a(b f)
-// pow     = λa b.b a
-// pred    = λn.head (n ‡ (cons 0 0))
-// sub     = λa b.b pred a
-// isOdd   = λn.n not false
-// isEven  = λn.n not true
-// <       = λa b. not (≤ b a)
-// ≤       = λm n. isZero (sub m n)
-// divide  = Y (λg q a b. < a b (cons q a) (g (succ q) (sub a b) b)) 0
-// -- utility
-// ‡       = λpair.cons (tail pair) (succ(tail pair)) -- transform pair
-// collatz = λn . if (isEven n) (pred n) (times 2 n)
-// Y = λg. (λx. g (x x)) (λx. g (x x)) 
-
-// -- try to get division to work
-// < 3 2
-
-
-
-
-
-
-
-const history = [], vars = {}
+const HISTORY = [], VARIABLES = {}
 
 D('code').focus()
-const improper = x => `<span style="color:#F44;">${x}</span>`
 
-function F(code) {
-    
-    // clear variables and reduction steps from the last time
-    history.length = 0
-    for (let i in vars) delete vars[i]
+function completeReduction(code) {
 
-    const allLines = code.split`\n`
-                         .map(s => s.split("--")[0]) // remove comments (but not this one)
-    
-    let maybeError
-    if (maybeError = containsErrors(allLines)) 
-        return improper(maybeError) // compiler should tell you what's up
-                    
-    const lines = allLines.filter(x=>x.trim())
-                      
-    const lastLineWithEqualSign = lines.reduce((a,v,i) => v.includes('=') ? i : a, -1)
-    
-    lines.slice(0,lastLineWithEqualSign+1).forEach(v => 
-        (([n,v]) => (vars[n] = v,[n,v])) // parse variable declarations
-        ( v.split`=`.map(x=>x.trim()) ))
+    const allLines = code.split`\n`.map(s => s.split("--")[0]) 
+    const improper = x =>                       // error style
+        `<span style="color:#f44;">${x}</span>` 
 
-    const expression = lines.slice(lastLineWithEqualSign+1)
-                            .map(s=>s.trim())
-                            .filter(s=>s).join` `
-                            .trim()
 
+    HISTORY.length = 0                          // clear variables and reduction steps from the last time
+    for (let i in VARIABLES) delete VARIABLES[i]          
+
+
+    const maybeError = containsErrors(allLines) // check for syntax errors
+    if (maybeError.isError)
+        return improper(maybeError.value)
+
+    const expression = maybeError.value         // no syntax error detected
     let exp = finalize(expression)
+    updateHistory_complete(exp)
 
-    if (tokenize(expression).length === 1) 
-        return exp // you probably want it expanded, if it's a definition, in this case
+    if (tokenize(expression).length === 1)      // you probably want it expanded, if it's a definition, in this case
+        return exp                             
 
-
-    const index = history.reduceRight((a,v,i) => a == null && 
-    tokenize(finalStep(escapeHTML(v))).every((x,i) => tokenize(exp)[i] === x) ? i : a, null)
-
-    if (index) history.splice(index, Infinity)
-    
-    const hstry = history.map(escapeHTML)
-    const finalResultAndStats = exp + 
-    '<br> <br> <br> <span style="display: inline-block; text-align:left; font-size: 1.5em;">' + 
-    'Reduction steps: ' + hstry.length +
-    '<br> Number of tokens:  ' + hstry.reduce((a,v) => a + tokenize(v).length, 0) +
-    '<br> Number of characters:  ' + hstry.reduce((a,v) => a + v.replace(/ /g,'').length, 0) + '</span>'
-
-    history.push(finalResultAndStats)
-
-    D('steps').innerHTML = '<br>' + history.join`<br><br>` + '<br><br>'
-
-    for (const key in vars) {
-        try {
-            if (isEquiv(finalize(vars[key]), exp)) {
-                exp = key
+    for (const key in VARIABLES) {
+        try { // will fail if thee value is divergent
+            if (isEquiv(finalize(VARIABLES[key]), exp)) {
+                exp = key // we want to replace the exp with a variable name, if possible.
                 break
             }
         } catch (e) { log('Hey look a error: ',e) }
     }
-            
+
     return exp
 }
+
+
+
+
+
 
 
 
 function finalize(exp) {
     return finalStep( betaReduce( exp ) )
 }
+
+
+
+
 
 
 
@@ -162,8 +74,12 @@ function finalStep(exp) {
 
 
 
+
+
+
+
 function curryStep(exp) {
-    // old way: return exp.replace(/(\.λ|  )/g,' ')   
+    // old way: simply: return exp.replace(/(\.λ|  )/g,' ')   
     // problem:
     // false = λa b.b
     // λa b. false a   ->   λa b b.b
@@ -189,7 +105,7 @@ function curryStep(exp) {
             result += clean( headBuffer ) + '.'
             headBuffer = ''
         }
-        else if (exp[i] === 'λ') headBuffer = 'λ'
+        else if (exp[i] === λ) headBuffer = λ
         
         else if (headBuffer) headBuffer += exp[i]
         
@@ -212,63 +128,64 @@ function curryStep(exp) {
 
 
 
-function betaReduce(e, options) {
-    const {outer_scope_awaits_lambda, outsideWrap} = (options=options||{})
-    const V = x => (x in vars ? V(vars[x]) : x)
-    e = stripUselessParentheses(e)
-    const terms = getTerms(e)
-    /* implement later if something goes wrong */ // if (!matchedParens(e)) throw 'what happened here'
 
-    let a = V(terms[0])
+
+
+
+function betaReduce(expr, options) {
+    const {outer_scope_awaits_lambda, outsideWrap} = (options=options||{})
+    const expand = x => (x in VARIABLES ? expand(VARIABLES[x]) : x)
+    const exp = stripUselessParentheses(expr)
+    const terms = getTerms(exp)
+
+    let a = expand(terms[0])
     const b = terms[1] 
 
     if (a == null) throw 'something is wrong'
 
     const wrap = options.outsideWrap = outsideWrap || (x => x)
-    history.push( wrap(e) )
+    HISTORY.push( wrap(exp) )
+
 
     if (a !== terms[0] && !terms[0].includes(a)) {
         const newExp = `(${a})` + gatherTerms(terms.slice(1))
 
-        while (history.length && escapeHTML(history.slice(-1)[0]).includes(newExp))
-            history.pop()
+        while (HISTORY.length && escapeHTML(HISTORY.slice(-1)[0]).includes(newExp))
+            HISTORY.pop() // filter out duplicate history
             
-        history.push( wrap( newExp ) )
+        HISTORY.push( wrap( newExp ) )
     }
         
 
     if (b == null) {
-    // if outer scope awaits a lambda, this is where we stop the recursion if a is a lambda
-    // we need to check whether or not there is an outer value to apply a to (because, maybe, we recursed into this expression (e)).
-    // if this is the case (a value outside is awaiting application), we should only try to reduce a by steps until it is a function
-
-        // if (![λ, ...Object.keys(vars)].some(t => a.includes(t))) { // buggy, try ```true = a; true ttrue```
         const tokens = tokenize(a)
 
-        if (![λ, ...Object.keys(vars)].some(t => tokens.includes(t))) {
-            return a; // no possible way to reduce
+        if (![λ, ...Object.keys(VARIABLES)].some(t => tokens.includes(t))) {
+            return a; // no lambdas, no variables, no possible way to reduce
         }
         if (outer_scope_awaits_lambda) {
-            if (a[0] === λ) {
-                return a; // yay recursion stopped!
-            } else {
-                return betaReduce(a, options)
-            }
+
+            return a[0] === λ ?
+            a // it's a function, which is what the outer scope was waiting for, so we can end the recursion here.
+            : betaReduce(a, options) // it's not a function, so we should recurse into it and try to see if it resolves to one.
+
         } else {
-            if (a[0] === λ) {
-                const i = a.indexOf('.')
+            if (a[0] === λ) { // we have a lambda, so return head + betaReduce(body)
+                const i = a.indexOf('.') 
                 return a.slice(0, i+1) + betaReduce(a.slice(i+1), {outsideWrap: makeWrap(wrap, a.slice(0,i+1), '', true) })
-            } else {
-                return betaReduce(a, options)
             }
+            else return betaReduce(a, options)
         }
     }
 
-    if (a[0] !== λ) {
-        a = betaReduce(a, 
-            { outer_scope_awaits_lambda: true, outsideWrap: makeWrap(wrap, '', gatherTerms(terms.slice(1))) })
-        if (a[0] !== λ) { // we can't reduce further on this scope
 
+    if (a[0] !== λ) { // well, it needs to be a lambda in order to apply it to b
+        a = betaReduce(a, { outer_scope_awaits_lambda: true, outsideWrap: makeWrap(wrap, '', gatherTerms(terms.slice(1))) })
+        // notice that we set outer_scope_awaits_lambda to true.
+        // this means that the reductions will stop when it becomes a lambda, 
+        // even if it's not yet fully reduced.
+
+        if (a[0] !== λ) { // it didn't reduce to a lambda, so we can't reduce further on this scope
             const result = gatherTerms(terms.slice(1).reduce((a,term,i) => 
 
                 [...a, betaReduce(term, { 
@@ -283,15 +200,14 @@ function betaReduce(e, options) {
     }
 
 
-
-
-
     // if code reaches here, then a is a lambda and we can simply apply it to b.
     const applied = applyAB(a,b)
-    return betaReduce(   
-        `(${applied})` + gatherTerms(terms.slice(2)) ,
-        options )
+    return betaReduce(`(${applied})` + gatherTerms(terms.slice(2)) , options)
 }
+
+
+
+
 
 
 
@@ -306,9 +222,17 @@ function makeWrap(oldwrap, a, b, NoP) {
 
 
 
+
+
+
+
 function dim(x) {
     return `<span class="dim" style="color:#777;"> ${x} </span>`
 }
+
+
+
+
 
 
 
@@ -320,10 +244,18 @@ function gatherTerms(terms) {
 
 
 
+
+
+
+
 function escapeHTML(x) { 
-    // this works because I replace the user's default <> symbols to unicode.
+    // this works because I replace the user's default <> symbols to unicode versions.
     return x.split(/\<.*?\>/).join`` 
 }
+
+
+
+
 
 
 
@@ -331,7 +263,7 @@ function escapeHTML(x) {
 function applyAB(a,b) {
     /* 
         apply function a to expression b 
-        don't rename any inner bound variables
+        don't rename any bound variables of lambdas inside b
     */
     const i = a.indexOf('.')
     const variables = a.slice(1,i).trim().split(' ') 
@@ -355,9 +287,7 @@ function applyAB(a,b) {
     const variable = variables[0]
     const head = variables.length === 1? '' : λ + variables.slice(1).join` ` + '.'
     body = a.slice(a.indexOf('.')+1)
-    // if (variable === b) return head + body // nice!!
 
-    // tokenize a and figure out which tokens equal to variable must not be replaced
     const tokens = tokenize(body)
 
     // basically, if we find variable between a λ and . in the body, 
@@ -377,6 +307,9 @@ function applyAB(a,b) {
 
 
 
+
+
+
 function tokenize(s) {
     let variableBuffer = false
     return [...s].reduce((a,v) => {
@@ -391,6 +324,10 @@ function tokenize(s) {
         [...a, v]
     }, [])
 }
+
+
+
+
 
 
 
@@ -415,6 +352,10 @@ function getTerms(s) {
 
 
 
+
+
+
+
 function stripUselessParentheses(t) {
     // strip away unnecessary parenthesis
     t = t.trim()
@@ -429,3 +370,120 @@ function stripUselessParentheses(t) {
     }
     return t
 }
+
+
+
+
+
+
+
+
+function updateHistory_complete(exp) {
+    const hstry = HISTORY.map(escapeHTML)
+    const index = hstry.reduceRight((a,v,i) =>  // find the first index, from the right, where exp === history[i]
+        a == null && tokenize(finalStep(v))
+        .every((x,i) => 
+            tokenize(exp)[i] === x) ? i : a, 
+    null)
+    if (index) HISTORY.splice(index, Infinity)  // we don't need to see any steps that happen after we get the result)
+    
+    
+    const finalResultAndStats = exp +           // enjoy some nice measurements
+    '<br> <br> <br> <span style="display: inline-block; text-align:left; font-size: 1.5em;">' + 
+    'Reduction steps: ' + hstry.length +
+    '<br> Number of tokens:  ' + hstry.reduce((a,v) => a + tokenize(v).length, 0) +
+    '<br> Number of characters:  ' + hstry.reduce((a,v) => a + v.replace(/ /g,'').length, 0) + '</span>'
+
+    HISTORY.push(finalResultAndStats)
+
+    D('steps').innerHTML = '<br>' + HISTORY.join`<br><br>` + '<br><br>'
+}
+
+
+
+
+
+// -- just putting this lambda calculus code somewhere:
+
+// true  = λ a b . a
+// false = 0
+// and   = λ a b . a (b true 0) 0
+// not   = λ b . b false true
+// or    = λ a b . a true (b true 0)
+// xor   = λ a b . a (b false true) (b true false)
+
+// `     = λ a op b . op a b
+// §     = λ p.[](snd p)(+(snd p))
+// []    = λ a b s . s a b 
+// [     = λ a , b ] s . s a b -- different list syntax
+// fst   = λ p . p true
+// snd   = λ p . p false
+
+// 0 = λ a b . b
+// 1 = + 0
+// 2 = + 1
+// 3 = + 2
+// 4 = + 3
+// 5 = + 4
+// 6 = + 5
+// 7 = + 6
+// 8 = + 7
+// 9 = + 8
+// 10 = + 9
+
+// +   = λ w y x . y ( w y x )
+// -1  = λ n . fst (n § ([] 0 0))
+// -   = λ a b . b -1 a
+// ＝0 = λ n . n (λx.false) true
+// ≥   = λ a b . ＝0 (` b - a)
+// ˃   = λ a b . not (` b ≥ a)
+// ≤   = λ a b . ＝0 (` a - b)
+// ˂   = λ a b . not (` a ≥ b)
+// ＝  = λ a b . ＝0 ((- a b) + (- b a)) -- less efficient, but more readable: λ a b . and (≤ a b) (≥ a b)
+
+// -- 1: less, 2: equal, 3: greater
+// cmp = λ a b . (` a ˂ b) 1 ((` a ˃ b) 3 2)
+
+// -- define integers
+// -- positives: (true, n)
+// -- negatives: (false,n)
+
+// -- "construct" positive
+// pos = λ n . [] true n
+
+// -- "construct" negative
+// neg = λ n . [] false n
+
+// ≥0  = fst
+
+// ˂0  = λ n . not (≥0 n)
+
+// -- cmpInts = λ a b .
+
+// abs = snd
+
+// invert = λ n . [(˂0 n),(abs n)] -- additive inverse
+// +_5 = pos 5
+// -_9 = neg 9
+// +_9 = pos 9
+// -_4 = neg 4
+// -- add +_5 -_9
+
+// -- verbose 
+// -- add = λ a b . (xor(≥0 a)(≥0 b)) ((˃ (abs a) (abs b)) ([] (≥0 a) (- (abs a) (abs b))) ([] (≥0 b) (- (abs b) (abs a)))) ( [] (≥0 a) ((abs a) + (abs b)) )
+// -- Reduction steps: 586, Number of tokens: 74228, Number of characters: 112087
+
+// -- dry, readable
+// -- add = λ a b . (λ A B C D . (` C xor D)   ( (` A ˃ B) ([ C , (` A - B) ]) [ D , (` B - A) ] )   ([ C , (A + B) ])) (abs a) (abs b) (≥0 a) (≥0 b)
+// -- Reduction steps: 600, Number of tokens: 77567, Number of characters: 114691
+
+
+// -- compact 
+// add = λ a b . (λ A B C D . (xor C D)   ( (˃ A B) ([] C (- A B)) [] D (- B A) )   ([] C (A + B))) (abs a) (abs b) (≥0 a) (≥0 b)
+// -- Reduction steps: 590, Number of tokens: 73355, Number of characters: 111316
+
+// -- sub = λ a b . add a ([] (˂0 b) (abs b))
+
+// sub = λ a b . add a (invert b)
+
+// sub +_5 -_4

@@ -20,11 +20,11 @@ function D(x) { return document.getElementById(x) }
 function runCode() {
   D('output').innerHTML = 'ß-reduction in process...'
   setTimeout(_ => (
-    D('output').innerHTML = F(window.ace.edit(D('code')).getSession().getValue()), 
+    D('output').innerHTML = completeReduction( window.ace.edit(D('code')).getSession().getValue() ), 
     D('code').focus()),
     300 + Math.random()*200|0)
 }
-  
+
 
 
 
@@ -34,20 +34,6 @@ function runCode() {
 
 document.onkeydown = function(e) { // ctrl + enter to run code
   e.ctrlKey && (e.keyCode === 13 || e.keyCode === 83) && runCode() 
-}
-  
-
-
-
-
-
-
-  
-// avoiding regex replace as much as possible because operators (variables) can be almost any symbol
-function replaceWith(str,find,replacement) { 
-  const i = str.indexOf(find)
-  return i < 0 ? str : replaceWith(
-    str.slice(0,i) + replacement + str.slice(i + find.length), find, replacement)
 }
 
 
@@ -126,11 +112,25 @@ addOne = λ w y x . y ( w y x )
     }
 }
 
+
+
+
+
+
+
+
 D('showsteps').onclick = _ => showReductionSteps()
 function showReductionSteps() {
   const steps = D('steps')
   steps.style.maxHeight = steps.style.maxHeight ? null : ~~(steps.scrollHeight*20) + 'px'
 }
+
+
+
+
+
+
+
 
 let lightTheme = false
 function toggleTheme() { 
@@ -151,7 +151,6 @@ function toggleTheme() {
 
 
 
-
 function alphaEquivalent(a,b) {
 
   if (a.length !== b.length) 
@@ -161,6 +160,11 @@ function alphaEquivalent(a,b) {
       
   return isEquiv(a,b) || alert('results are not alpha equivalent')
 }
+
+
+
+
+
 
 
 
@@ -185,4 +189,17 @@ function isEquiv(a,b) {
       j++
   }
   return a === b
+}
+
+
+
+
+
+
+
+
+function replaceWith(str,find,replacement) { 
+  const i = str.indexOf(find)
+  return i < 0 ? str : replaceWith(
+    str.slice(0,i) + replacement + str.slice(i + find.length), find, replacement)
 }
