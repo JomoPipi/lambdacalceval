@@ -14,7 +14,7 @@
             font-weight: bold; 
         } 
         #code {
-            width:80vw;
+            width:100%;
             min-height:100px;
         }
         .maintext {
@@ -31,7 +31,8 @@
             color:white;
         }
         .output-steps { 
-            width: 80vw;
+            border-radius: 10px;
+            width: 100%;
             font-family: monospace;
             background-color:#151515;
             color:#dfd;
@@ -55,7 +56,8 @@
         .mybtn {
             background: #555;
             color:#bbb;
-            border-radius: 5px;
+            border-radius: 10px;
+            font-size: 15px;
         }
         .mybtn:focus { outline: none; }
         .mybtndark {
@@ -77,7 +79,7 @@
         <div id="code" cols="50" rows="5" spellcheck="false"></div>
         <div id="code-ghost" style="height:0;"></div>
         
-        <div id="button_and_output" style="width:80vw;margin-top:10px;">
+        <div id="button_and_output" style="width:100%;margin-top:10px;">
 
             <div class="output" id="output" style="width:90%; height: 50px; float: left;
             border-top-left-radius: 10px; border-bottom-left-radius: 10px;
@@ -89,7 +91,7 @@
 
         </div>
 
-        <button style="width: 80vw;margin-top: 2%;" 
+        <button style="width: 100%;margin-top: 2%;" 
         class="mybtn" id="showsteps">see reduction steps and statistics</button>
         <div id="steps" class="output-steps"></div>
 

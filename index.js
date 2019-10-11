@@ -1,6 +1,6 @@
 
 
-const HISTORY = [], VARIABLES = {}
+const HISTORY = [], VARIABLES = {}, VARIABLE_NORMAL_FORM_MEMO = {}
 
 D('code').focus()
 
@@ -12,12 +12,16 @@ function completeReduction(code) {
 
 
     HISTORY.length = 0                          // clear variables and reduction steps from the last time
-    for (let i in VARIABLES) delete VARIABLES[i]          
-
+    for (const i in VARIABLES) delete VARIABLES[i]          
 
     const maybeError = containsErrors(allLines) // check for syntax errors
     if (maybeError.isError)
         return improper(maybeError.value)
+
+    // for (const i in VARIABLES) {
+    //     const V = VARIABLES[i]
+    //     if (VARIABLE_NORMAL_FORM_MEMO)
+    // }
 
     const expression = maybeError.value         // no syntax error detected
     let exp = finalize(expression)
@@ -27,11 +31,11 @@ function completeReduction(code) {
         return exp                             
 
     for (const key in VARIABLES) {
-        try { // will fail if thee value is divergent
-            if (isEquiv(finalize(VARIABLES[key]), exp)) {
+        try {
+            if (isEquiv(finalStep(VARIABLES[key]), exp)) {
                 return key // this will probably be simpler than the expression.
             }
-        } catch (e) { log('Hey look a error: ',e) }
+        } catch (e) { log('Hey look a error: ',e); continue }
     }
 
     return exp
@@ -392,7 +396,7 @@ function updateHistory(exp, then) {
     'Reduction steps:            ' + hstry.length +
     '<br> Number of tokens:      ' + hstry.reduce((a,v) => a + tokenize(v).length, 0) +
     '<br> Number of characters:  ' + hstry.reduce((a,v) => a + v.replace(/ /g,'').length, 0) +
-    '<br> Time elapsed:          ' + (Date.now() - then) + 'ms </span>'
+    '<br> Calculation duration:  ' + (Date.now() - then) + 'ms </span>'
 
     HISTORY.push(finalResultAndStats)
 

@@ -199,13 +199,17 @@ function runTests() {
 
 
 // my current code:
+
+
 // true  = λ a b . a
-// false = 0
+// false = λ a b . b
+// if    = λ c t e.c t e
 // and   = λ a b . a (b true 0) 0
 // not   = λ b . b false true
 // or    = λ a b . a true (b true 0)
 // xor   = λ a b . a (b false true) (b true false)
 
+// -- functiions
 // Y     = λ y . (λx.y(x x)) (λx.y(x x)) 
 // `     = λ a op b . op a b
 // §     = λ p.[](snd p)(+(snd p))
@@ -225,7 +229,19 @@ function runTests() {
 // 8 = + 7
 // 9 = + 8
 // 10 = + 9
+// 11 = + 10
+// 12 = + 11
+// 13 = + 12
+// 14 = + 13
+// 15 = + 14
+// 16 = + 15
+// 17 = + 16
+// 18 = + 17
+// 19 = + 18
+// 20 = + 19
 
+// min = λ a b . ˂ a b a b
+// max = λ a b . ˃ a b a b
 // +   = λ w y x . y ( w y x )
 // *   = λ a b f . a (b f)
 // -1  = λ n . fst (n § ([] 0 0))
@@ -235,14 +251,10 @@ function runTests() {
 // ˃   = λ a b . not (` b ≥ a)
 // ≤   = λ a b . ＝0 (` a - b)
 // ˂   = λ a b . not (` a ≥ b)
-// ＝  = λ a b . ＝0 ((- a b) + (- b a)) -- less efficient, but more readable: λ a b . and (≤ a b) (≥ a b)
+// ＝  = λ a b . ＝0 ((- a b) + (- b a)) 
 
 // -- 1: less, 2: equal, 3: greater
 // cmp = λ a b . (` a ˂ b) 1 ((` a ˃ b) 3 2)
-
-// -- define integers
-// -- positives: (true, n)
-// -- negatives: (false,n)
 
 // -- "construct" positive
 // pos = λ n . [] true n
@@ -260,11 +272,8 @@ function runTests() {
 
 // invert = λ n . [(˂0 n),(abs n)] -- additive inverse
 
-// -- add +_5 -_9
 
-// -- compact 
 // add = λ a b . (λ A B C D . (xor C D)   ( (˃ A B) ([] C (- A B)) [] D (- B A) )   ([] C (A + B))) (abs a) (abs b) (≥0 a) (≥0 b)
-// -- Reduction steps: 590, Number of tokens: 73355, Number of characters: 111316
 
 // -- sub = λ a b . add a ([] (˂0 b) (abs b))
 
@@ -273,12 +282,12 @@ function runTests() {
 
 // /% = λ r a b . ˂ a b 0 (+ (r (- a b) b))
 
-// %% = λ r a b . ˂ a b a (+ (r (- a b) b))
+// %% = λ r a b . ˂ a b a (r (- a b) b)
 
 // / = λ a b . Y /% a b
 // % = λ a b . Y %% a b
 
-// factorial% = λ r n . ＝0 n 1 (* n (r (-1 n)))
+// factorial% = λ r n . ＝0 n 1 ( * n (r (-1 n)))
 
 // factorial = λ n . Y factorial% n
 
@@ -287,20 +296,38 @@ function runTests() {
 // -- rationals
 
 
-// frac = λ n d . simplify ( (xor (≥0 n) (≥0 d))   ([] (neg (abs n)) (abs d))   ([] (abs n) (abs d)) )
+// frac = λ n d . (λ ND. (λ N D. (xor (≥0 n) (≥0 d))   ([] (neg N) D)   ([] N D) ) (fst ND) (snd ND)) (simplify (abs n) (abs d))
 
-// -- simplify = λ f . (λ n d . ) (num f) (den f)
-
-// num = fst
-// den = snd
-
-// +_5 = pos 5
-// -_4 = neg 4
-// -_5 = neg 5
-// +_4 = pos 4
-
-// frac＝ = λ a b .`(＝ (num a) (num b))   and   (＝ (den a) (den b))
 
 // -- are a and b both divisible by n?
 // isCommonDiv = λ a b n . and (＝0 (% a n)) (＝0 (% b n))
+
+// -- natRange 2 (min a b)
+
+// -- findCommonDiv returns 0 if none was found
+// findCommonDiv% = λ r a b i end. ＝ i end 0 ( isCommonDiv a b i i (r a b (+ i) end) )
+
+// findCommonDiv = λ a b . Y findCommonDiv% a b 2 (+ (min a b))
+
+
+// simplify% = λ r n d . (λx. ＝0 x ([] n d) (r (/ n x) (/ d x))) (findCommonDiv n d)
+
+// simplify = λ n d . Y simplify% n d
+
+// numerator = fst
+// denominator = snd
+
+// +_2 = pos 2
+// -_2 = neg 2
+// -_1 = neg 1
+// +_1 = pos 1
+
+// numerator (frac +_2 -_2)
+
+// -- result: λs.s(λa b.b)(λy a.y a)           (neg 1)
+
+// -- Reduction steps: 36302
+// -- Number of tokens: 21745198
+// -- Number of characters: 43088898
+// -- Calculation duration: 78790ms
 
