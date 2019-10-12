@@ -64,17 +64,45 @@
             background: #eee;
             color:#333;
         }
+        #run-btn {
+            width:10%; height: 50px; float: left; border:none;
+            border-top-right-radius: 10px; border-bottom-right-radius: 10px;
+            color:white;background-color: rgb(4, 73, 57);
+            font-size: 1.25em;
+        }
+        #run-options {
+            text-align: left;
+            border-radius: 10px;
+            border: 1px solid white;
+            margin-bottom: 1%;
+            display: none;
+            height: 100px;
+        }
     
     </style>
     <script src="ace.js"></script>
 </head>
 <body class="bodyclass">
     <button onclick="toggleTheme()" id="toggle-theme" class="mybtn" style="cursor: pointer;border-radius: 9px;"> theme </button>
+    
+    <button onclick=" const s = D('run-options').style
+    s.display = s.display === 'none' ? 'block' : 'none'
+    " id="run-options-btn" class="mybtn" 
+    style="cursor: pointer;border-radius: 9px;"> run options </button>
+    
     <center style="margin: 2%;">
+
         <center id="main-text" class="maintext" style="margin-bottom: 1%;">
             Normal Order λ Calculus Evaluator <br>
             <span style="text-align: left;"> Typing a backslash (<code>\</code>) results in the lambda symbol. </span>
         </center>
+
+        
+        <div id="run-options" class="maintext" >
+            <br>
+            <input type="checkbox" id="optimize">
+            maximum overdrive (decreases the number of reduction steps)
+        </div>
         
         <div id="code" cols="50" rows="5" spellcheck="false"></div>
         <div id="code-ghost" style="height:0;"></div>
@@ -85,9 +113,7 @@
             border-top-left-radius: 10px; border-bottom-left-radius: 10px;
             min-height: 50px; line-height: 50px;"></div>
 
-            <input type="button" style="width:10%; height: 50px; float: left; border:none;
-            border-top-right-radius: 10px; border-bottom-right-radius: 10px;
-                color:white;background-color: rgb(4, 73, 57);" value="run" onclick="runCode()">
+            <input type="button" id="run-btn" value="run" onclick="runCode()">
 
         </div>
 
@@ -106,6 +132,7 @@
         </div>
     </center>
     <script src="setup.js"></script>
+    <script src="utile.js"></script>
     <script src="check.js"></script>
     <script src="index.js"></script>
     <script src="tests.js"></script>

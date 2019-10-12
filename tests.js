@@ -28,7 +28,7 @@ const inputOutput = [
         true = a
         true ttrue
         `,
-        'a ttrue',
+        'true ttrue',
     ],
 
     [
@@ -46,7 +46,7 @@ const inputOutput = [
 
         pair 0 0
         `,
-        'λs.s(λa b.b)(λa b.b)'
+        'λs.s 0 0'
     ],
 
     [
@@ -180,12 +180,16 @@ if    = λcond then else . cond then else
 
 
 function runTests() {
-    const then = Date.now()
-    const fail = inputOutput.map(([i,o]) => [completeReduction(i), o]).find(([i,o]) => !alphaEquivalent(i,o));
-    (x => (alert(x), log(x), x) )
-    (fail ? `failed with input = ${fail[0]}
-    actual:  ${fail[0]}
-    expected:${fail[1]}` : 'Passed all the tests!! \n Time elapsed for all tests: ' + (Date.now() - then) + ' ms')
+    const then = Date.now(), f = x=>(alert(x),log(x),x)
+    for (const [i,expected] of inputOutput) {
+        const actual = completeReduction(i)
+        const pass = alphaEquivalent(actual,expected)
+        if (!pass) return f(`
+        failed with input:  ${i}
+        actual:             ${actual}
+        expected:           ${expected}`)
+    }
+    return f(`Passed all the tests!! \n Time elapsed for all tests: ${Date.now() - then} ms`)
 }
 
 
@@ -199,7 +203,6 @@ function runTests() {
 
 
 // my current code:
-
 
 // true  = λ a b . a
 // false = λ a b . b
@@ -296,7 +299,7 @@ function runTests() {
 // -- rationals
 
 
-// frac = λ n d . (λ ND. (λ N D. (xor (≥0 n) (≥0 d))   ([] (neg N) D)   ([] N D) ) (fst ND) (snd ND)) (simplify (abs n) (abs d))
+// frac = λ n d . (λ ND. (λ N D. (xor (≥0 n) (≥0 d))   ([] (neg N) D)   ([] (pos N) D) ) (fst ND) (pos (snd ND))) (simplify (abs n) (abs d))
 
 
 // -- are a and b both divisible by n?
@@ -317,17 +320,14 @@ function runTests() {
 // numerator = fst
 // denominator = snd
 
-// +_2 = pos 2
-// -_2 = neg 2
-// -_1 = neg 1
-// +_1 = pos 1
+// +_8 = pos 8
+// -_6 = neg 6
 
-// numerator (frac +_2 -_2)
+// -4 = neg 4 
+// +3 = pos 3
 
-// -- result: λs.s(λa b.b)(λy a.y a)           (neg 1)
+// frac +_8 -_6
 
-// -- Reduction steps: 36302
-// -- Number of tokens: 21745198
-// -- Number of characters: 43088898
-// -- Calculation duration: 78790ms
+
+
 

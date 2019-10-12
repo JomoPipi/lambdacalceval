@@ -1,6 +1,8 @@
 
 
-const HISTORY = [], VARIABLES = {}, VARIABLE_NORMAL_FORM_MEMO = {}
+const HISTORY = [], VARIABLES = {}, EXP_MEMO = {}, MAXIMUM_OVERDRIVE = D('optimize')
+
+const treadCarefully = (exp,outer) => finalStep(betaReduce(exp, { outer_scope_awaits_lambda: outer, limit: 1000 }))
 
 D('code').focus()
 
@@ -11,34 +13,61 @@ function completeReduction(code) {
         `<span style="color:#f44;">${x}</span>` 
 
 
-    HISTORY.length = 0                          // clear variables and reduction steps from the last time
-    for (const i in VARIABLES) delete VARIABLES[i]          
+    HISTORY.length = 0                          // clear variables from the last time
+    for (const i in VARIABLES) delete VARIABLES[i]      
+    for (const i in  EXP_MEMO) delete  EXP_MEMO[i]    
 
     const maybeError = containsErrors(allLines) // check for syntax errors
     if (maybeError.isError)
         return improper(maybeError.value)
 
-    // for (const i in VARIABLES) {
-    //     const V = VARIABLES[i]
-    //     if (VARIABLE_NORMAL_FORM_MEMO)
-    // }
+    if (MAXIMUM_OVERDRIVE.checked) {
+        for (const name in VARIABLES) {
+            const value = VARIABLES[name]
+            try {
+                VARIABLES[name] = treadCarefully(value, true)
+            } catch (e) {
+                log('got an error while trying to optimize a variable:',name,value,e)
+                VARIABLES[name] = value
+            }
+            HISTORY.length = 0
+        }
+    }
 
     const expression = maybeError.value         // no syntax error detected
-    let exp = finalize(expression)
+    const exp = finalize(expression)
+
     updateHistory(exp, then)
 
     if (tokenize(expression).length === 1)      // you probably want it expanded, if it's a definition, in this case
         return exp                             
 
+    return finalStep(condense(exp))
+}
+
+
+
+
+
+
+
+
+function condense(exp) {
     for (const key in VARIABLES) {
-        try {
-            if (isEquiv(finalStep(VARIABLES[key]), exp)) {
+        try { // might fail if divergent
+            HISTORY.length = 0
+            if (isEquiv(treadCarefully(VARIABLES[key]), exp)) {
                 return key // this will probably be simpler than the expression.
             }
-        } catch (e) { log('Hey look a error: ',e); continue }
+        } catch (e) { log('Hey look a error: ',e,
+'\ndue to a divergent term. No worries. The term is:\n',VARIABLES[key]); continue }
     }
-
-    return exp
+    if (exp[0] === λ) {
+        const x = exp.indexOf('.')+1
+        return exp.slice(0,x) + condense(exp.slice(x))
+    }
+    const terms = getTerms(exp)
+    return terms.length === 1 ? terms[0] : gatherTerms(terms.map(condense))
 }
 
 
@@ -64,10 +93,8 @@ function finalStep(exp) {
                 gatherTerms(
                     getTerms(
                         exp)))
-        .replace(/λ +/g, λ)
-        .replace(/ +λ/g, λ)
-        .replace(/\. +/g,'.')
-        .replace(/ +\./g,'.')
+        .replace(/(λ +| +λ)/g, λ)
+        .replace(/(\. +| +\.)/g,'.')
         .replace(/\( +/g,'(')
         .replace(/ +\(/g,'(')
         .replace(/\) +/g,')')
@@ -102,17 +129,17 @@ function curryStep(exp) {
     }
     exp = exp.replace(/(\.λ|  )/g,' ')   
     // clear out the duplicates in the heads
-    let result = ''
+    const result = []
     for (let i = 0, headBuffer = ''; i < exp.length; i++) {
         if (exp[i] === '.' ) {
-            result += clean( headBuffer ) + '.'
+            result.push(clean( headBuffer ) + '.')
             headBuffer = ''
         }
         else if (exp[i] === λ) headBuffer = λ
         
         else if (headBuffer) headBuffer += exp[i]
         
-        else result += exp[i]
+        else result.push(exp[i])
     }
     function clean(head) {
         // first term is λ, so remove it, for now
@@ -125,7 +152,7 @@ function curryStep(exp) {
             }
         return head // no duplicates found
     }
-    return result 
+    return result.join``
 }
 
 
@@ -135,25 +162,30 @@ function curryStep(exp) {
 
 
 
-function betaReduce(expr, options) {
-    const {outer_scope_awaits_lambda, outsideWrap} = (options=options||{})
+function betaReduce(expr, _options) {
+    const {outer_scope_awaits_lambda, outsideWrap,limit} = (_options=_options||{})
     const expand = x => (x in VARIABLES ? expand(VARIABLES[x]) : x)
     const exp = stripUselessParentheses(expr)
     const terms = getTerms(exp)
+    const memokey = terms.slice(0,2).join`:`
+
+    if (EXP_MEMO[memokey]) 
+        return  betaReduce( EXP_MEMO[memokey] + gatherTerms(terms.slice(2)) , _options )
 
     let a = expand(terms[0])
     const b = terms[1] 
 
     if (a == null) throw 'something is wrong'
 
-    const wrap = options.outsideWrap = outsideWrap || (x => x)
+    const wrap = outsideWrap || (x => x)
     HISTORY.push( wrap(exp) )
+    if (limit && HISTORY.length > limit) throw "possible divergent expression"
 
 
     if (a !== terms[0] && !terms[0].includes(a)) {
         const newExp = `(${a})` + gatherTerms(terms.slice(1))
 
-        while (HISTORY.length && escapeHTML(HISTORY.slice(-1)[0]).includes(newExp))
+        if (HISTORY.length && escapeHTML(HISTORY.slice(-1)[0]).includes(newExp))
             HISTORY.pop() // filter out duplicate history
             
         HISTORY.push( wrap( newExp ) )
@@ -170,33 +202,35 @@ function betaReduce(expr, options) {
 
             return a[0] === λ ?
             a // it's a function, which is what the outer scope was waiting for, so we can end the recursion here.
-            : betaReduce(a, options) // it's not a function, so we should recurse into it and try to see if it resolves to one.
+            : betaReduce(a, _options) // it's not a function, so we should recurse into it and try to see if it resolves to one.
 
         } else {
             if (a[0] === λ) { // we have a lambda, so return head + betaReduce(body)
                 const i = a.indexOf('.') 
-                return a.slice(0, i+1) + betaReduce(a.slice(i+1), {outsideWrap: makeWrap(wrap, a.slice(0,i+1), '', true) })
+                return a.slice(0, i+1) + betaReduce(a.slice(i+1), {
+                    outer_scope_awaits_lambda, 
+                    outsideWrap: makeWrap(wrap, a.slice(0,i+1), '', true),
+                    limit
+                })
             }
-            else return betaReduce(a, options)
+            else return betaReduce(a, _options)
         }
     }
 
 
     if (a[0] !== λ) { // well, it needs to be a lambda in order to apply it to b
-        a = betaReduce(a, { outer_scope_awaits_lambda: true, outsideWrap: makeWrap(wrap, '', gatherTerms(terms.slice(1))) })
+        a = betaReduce(a, { outer_scope_awaits_lambda: true, outsideWrap: makeWrap(wrap, '', gatherTerms(terms.slice(1))), limit })
         // notice that we set outer_scope_awaits_lambda to true.
         // this means that the reductions will stop when it becomes a lambda, 
         // even if it's not yet fully reduced.
 
         if (a[0] !== λ) { // it didn't reduce to a lambda, so we can't reduce further on this scope
-            const result = gatherTerms(terms.slice(1).reduce((a,term,i) => 
-
-                [...a, betaReduce(term, { 
-                    outsideWrap: 
-                        makeWrap(   wrap,   gatherTerms(a),   gatherTerms(terms.slice(1).slice(i+2))   )
+            const result = gatherTerms(terms.slice(1).reduce((a,term,i) => (
+                [...a, betaReduce(term, {
+                     outsideWrap: makeWrap(   wrap,   gatherTerms(a),   gatherTerms(terms.slice(1).slice(i+2))   ), 
+                     limit
                 })]
-
-            , [a]))
+        ), [a]))
 
             return result
         }
@@ -204,34 +238,12 @@ function betaReduce(expr, options) {
 
 
     // if code reaches here, then a is a lambda and we can simply apply it to b.
-    const applied = applyAB(a,b)
-    return betaReduce(`(${applied})` + gatherTerms(terms.slice(2)) , options)
+    const applied = `(${applyAB(a,b)})`
+    if (MAXIMUM_OVERDRIVE.checked) EXP_MEMO[memokey] = applied
+    return betaReduce(applied + gatherTerms(terms.slice(2)) , _options)
 }
 
 
-
-
-
-
-
-
-function makeWrap(oldwrap, a, b, NoP) {
-    const [l,r] = NoP ? ['',''] : '()'
-    return s => oldwrap(
-        dim((a||'') + l) + s +
-        dim(r + (b||''))) 
-}
-
-
-
-
-
-
-
-
-function dim(x) {
-    return `<span class="dim" style="color:#777;"> ${x} </span>`
-}
 
 
 
@@ -241,20 +253,9 @@ function dim(x) {
 
 
 function gatherTerms(terms) {
-    return terms.map(x => tokenize(x).length === 1 ? ` ${x} ` : `(${x})`).join``
+    return terms.map(x => tokenize(x).length === 1 ? x : `(${x})`).join` `
 }
 
-
-
-
-
-
-
-
-function escapeHTML(x) { 
-    // this works because I replace the user's default <> symbols to unicode versions.
-    return x.split(/\<.*?\>/).join`` 
-}
 
 
 
@@ -289,7 +290,7 @@ function applyAB(a,b) {
     }
     const variable = variables[0]
     const head = variables.length === 1? '' : λ + variables.slice(1).join` ` + '.'
-    body = a.slice(a.indexOf('.')+1)
+    body = a.slice(i+1)
 
     const tokens = tokenize(body)
 
@@ -301,7 +302,7 @@ function applyAB(a,b) {
         inhead = t === λ ? true : t === '.' ? false : inhead
         if (level > 0) level += t === ')' ? -1 : t === '(' ? 1 : 0 
         if (inhead && level === 0 && t === variable) { level = 1 } 
-        const replacement = tokenize(b).length == 1 ? b : `(${b})`
+        const replacement = btokens.size === 1 ? b : `(${b})`
         // we need to be in level 0 in order to replace variables
         return level === 0 && t === variable ? replacement : t 
     }).join` `
@@ -362,43 +363,20 @@ function getTerms(s) {
 function stripUselessParentheses(t) {
     // strip away unnecessary parenthesis
     t = t.trim()
-    const i = [...t].findIndex((v,j) => v==='(' && t[j+2] === ')')
-    if (i >= 0) return stripUselessParentheses(t.slice(0,i) + ' ' + t[i+1] + ' ' + t.slice(i+3))
-    if (t[0]==='(') {
-        for(let i=1,x=1; t[i]; i++) {
-            x += t[i] === '(' ?  1 : t[i] === ')' ? -1 : 0
-            if (!x && t[i+1]) return t
+    while (true) {
+        const i = [...t].findIndex((v,j) => v==='(' && t[j+2] === ')')
+        if (i >= 0) {
+            t = (t.slice(0,i) + ' ' + t[i+1] + ' ' + t.slice(i+3)).trim()
+            continue
         }
-        return stripUselessParentheses(t.slice(1,-1))
+        if (t[0]==='(') {
+            for(let i=1,x=1; t[i]; i++) {
+                x += t[i] === '(' ?  1 : t[i] === ')' ? -1 : 0
+                if (!x && t[i+1]) return t
+            }
+            t = (t.slice(1,-1)).trim()
+            continue
+        }
+        return t
     }
-    return t
-}
-
-
-
-
-
-
-
-
-function updateHistory(exp, then) {
-    const hstry = HISTORY.map(escapeHTML)
-    const index = hstry.reduceRight((a,v,i) =>  // find the first index, from the right, where exp === history[i]
-        a == null && tokenize(finalStep(v))
-        .every((x,i) => 
-            tokenize(exp)[i] === x) ? i : a, 
-    null)
-    if (index) HISTORY.splice(index, Infinity)  // we don't need to see any steps that happen after we get the result)
-    
-    
-    const finalResultAndStats = exp +           // enjoy some nice measurements
-    '<br> <br> <br> <span style="display: inline-block; text-align:left; font-size: 1.5em;">' + 
-    'Reduction steps:            ' + hstry.length +
-    '<br> Number of tokens:      ' + hstry.reduce((a,v) => a + tokenize(v).length, 0) +
-    '<br> Number of characters:  ' + hstry.reduce((a,v) => a + v.replace(/ /g,'').length, 0) +
-    '<br> Calculation duration:  ' + (Date.now() - then) + 'ms </span>'
-
-    HISTORY.push(finalResultAndStats)
-
-    D('steps').innerHTML = '<br>' + HISTORY.join`<br><br>` + '<br><br>'
 }

@@ -27,7 +27,8 @@ function containsErrors(allLines) {
             return doError("Names shouldn't contain equal signs, because we use them to declare names.", col2)
 
         const [name,value] = line.split`=`.map(x=>x.trim())
-        VARIABLES[name] = value
+
+        VARIABLES[name] = finalStep(value)
 
         if (/[λ.() ]/.test(name)) 
             return doError('Names shouldn\'t contains any of these characers <code>"λ.() ="</code>.', 0)
