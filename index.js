@@ -1,8 +1,8 @@
+'use strict'
 
+const HISTORY = [], VARIABLES = {}, EXP_MEMO = {}, MAXIMUM_OVERDRIVE = D('optimize'), DIVERGENT = new Set(), NORMAL_FORM = {}
 
-const HISTORY = [], VARIABLES = {}, EXP_MEMO = {}, MAXIMUM_OVERDRIVE = D('optimize')
-
-const treadCarefully = (exp,outer) => finalStep(betaReduce(exp, { outer_scope_awaits_lambda: outer, limit: 1000 }))
+const treadCarefully = (exp,outer) => finalStep(betaReduce(exp, { outer_scope_awaits_lambda: outer, limit: 100 }))
 
 D('code').focus()
 
@@ -14,24 +14,26 @@ function completeReduction(code) {
 
 
     HISTORY.length = 0                          // clear variables from the last time
-    for (const i in VARIABLES) delete VARIABLES[i]      
-    for (const i in  EXP_MEMO) delete  EXP_MEMO[i]    
+    for (const i in VARIABLES) delete VARIABLES[i]   
+    for (const i in DIVERGENT) delete DIVERGENT[i]      
+    for (const i in  EXP_MEMO) delete  EXP_MEMO[i]       
 
     const maybeError = containsErrors(allLines) // check for syntax errors
     if (maybeError.isError)
         return improper(maybeError.value)
 
-    if (MAXIMUM_OVERDRIVE.checked) {
-        for (const name in VARIABLES) {
-            const value = VARIABLES[name]
-            try {
-                VARIABLES[name] = treadCarefully(value, true)
-            } catch (e) {
-                log('got an error while trying to optimize a variable:',name,value,e)
-                VARIABLES[name] = value
-            }
-            HISTORY.length = 0
+    for (const name in VARIABLES) {
+        const value = VARIABLES[name]
+        try {
+            const x = treadCarefully(value, true)
+            if (MAXIMUM_OVERDRIVE.checked) 
+                VARIABLES[name] = x
+        } catch (e) {
+            log('got an error while trying to optimize a variable:',name,value,e)
+            VARIABLES[name] = value
+            DIVERGENT.add(name)
         }
+        HISTORY.length = 0
     }
 
     const expression = maybeError.value         // no syntax error detected
@@ -52,22 +54,29 @@ function completeReduction(code) {
 
 
 
-function condense(exp) {
+function condense(exp, i) {
+    i = (i || 0)
+    if (i === 3) return exp // we don't need  to go too far
     for (const key in VARIABLES) {
-        try { // might fail if divergent
-            HISTORY.length = 0
-            if (isEquiv(treadCarefully(VARIABLES[key]), exp)) {
+        const vk = VARIABLES[key]
+        if (isEquiv(vk, exp)) return key
+        if (DIVERGENT.has(key)) continue
+        HISTORY.length = HISTORY.iter = 0
+        HISTORY.charLimit = vk.length * 20
+        try {
+            const reduced = NORMAL_FORM[key] || (NORMAL_FORM[key] = treadCarefully(vk, false))
+            
+            if (isEquiv(reduced, exp)) {
                 return key // this will probably be simpler than the expression.
             }
-        } catch (e) { log('Hey look a error: ',e,
-'\ndue to a divergent term. No worries. The term is:\n',VARIABLES[key]); continue }
+        } catch (e) { log ('check out this error: ',e) }
     }
     if (exp[0] === λ) {
         const x = exp.indexOf('.')+1
-        return exp.slice(0,x) + condense(exp.slice(x))
+        return exp.slice(0,x) + condense(exp.slice(x),i+1)
     }
     const terms = getTerms(exp)
-    return terms.length === 1 ? terms[0] : gatherTerms(terms.map(condense))
+    return terms.length === 1 ? terms[0] : gatherTerms(terms.map(x => condense(x,i+1)))
 }
 
 
@@ -162,15 +171,19 @@ function curryStep(exp) {
 
 
 
-function betaReduce(expr, _options) {
-    const {outer_scope_awaits_lambda, outsideWrap,limit} = (_options=_options||{})
+function betaReduce(expr, options={}) {
+    const {outer_scope_awaits_lambda, outsideWrap,limit,charLimit} = options
+    if (limit) {
+        if (HISTORY.iter++ > limit || expr.length > charLimit)  
+            throw "possible divergent expression"
+    }
     const expand = x => (x in VARIABLES ? expand(VARIABLES[x]) : x)
     const exp = stripUselessParentheses(expr)
     const terms = getTerms(exp)
     const memokey = terms.slice(0,2).join`:`
 
     if (EXP_MEMO[memokey]) 
-        return  betaReduce( EXP_MEMO[memokey] + gatherTerms(terms.slice(2)) , _options )
+        return  betaReduce( EXP_MEMO[memokey] + gatherTerms(terms.slice(2)) , options )
 
     let a = expand(terms[0])
     const b = terms[1] 
@@ -179,7 +192,6 @@ function betaReduce(expr, _options) {
 
     const wrap = outsideWrap || (x => x)
     HISTORY.push( wrap(exp) )
-    if (limit && HISTORY.length > limit) throw "possible divergent expression"
 
 
     if (a !== terms[0] && !terms[0].includes(a)) {
@@ -202,24 +214,25 @@ function betaReduce(expr, _options) {
 
             return a[0] === λ ?
             a // it's a function, which is what the outer scope was waiting for, so we can end the recursion here.
-            : betaReduce(a, _options) // it's not a function, so we should recurse into it and try to see if it resolves to one.
+            : betaReduce(a, options) // it's not a function, so we should recurse into it and try to see if it resolves to one.
 
         } else {
             if (a[0] === λ) { // we have a lambda, so return head + betaReduce(body)
                 const i = a.indexOf('.') 
                 return a.slice(0, i+1) + betaReduce(a.slice(i+1), {
-                    outer_scope_awaits_lambda, 
                     outsideWrap: makeWrap(wrap, a.slice(0,i+1), '', true),
+                    outer_scope_awaits_lambda, 
+                    charLimit,
                     limit
                 })
             }
-            else return betaReduce(a, _options)
+            else return betaReduce(a, options)
         }
     }
 
 
     if (a[0] !== λ) { // well, it needs to be a lambda in order to apply it to b
-        a = betaReduce(a, { outer_scope_awaits_lambda: true, outsideWrap: makeWrap(wrap, '', gatherTerms(terms.slice(1))), limit })
+        a = betaReduce(a, { outer_scope_awaits_lambda: true, outsideWrap: makeWrap(wrap, '', gatherTerms(terms.slice(1))), limit, charLimit })
         // notice that we set outer_scope_awaits_lambda to true.
         // this means that the reductions will stop when it becomes a lambda, 
         // even if it's not yet fully reduced.
@@ -228,6 +241,7 @@ function betaReduce(expr, _options) {
             const result = gatherTerms(terms.slice(1).reduce((a,term,i) => (
                 [...a, betaReduce(term, {
                      outsideWrap: makeWrap(   wrap,   gatherTerms(a),   gatherTerms(terms.slice(1).slice(i+2))   ), 
+                     charLimit,
                      limit
                 })]
         ), [a]))
@@ -240,7 +254,7 @@ function betaReduce(expr, _options) {
     // if code reaches here, then a is a lambda and we can simply apply it to b.
     const applied = `(${applyAB(a,b)})`
     if (MAXIMUM_OVERDRIVE.checked) EXP_MEMO[memokey] = applied
-    return betaReduce(applied + gatherTerms(terms.slice(2)) , _options)
+    return betaReduce(applied + gatherTerms(terms.slice(2)) , options)
 }
 
 
@@ -290,7 +304,7 @@ function applyAB(a,b) {
     }
     const variable = variables[0]
     const head = variables.length === 1? '' : λ + variables.slice(1).join` ` + '.'
-    body = a.slice(i+1)
+    const body = a.slice(i+1)
 
     const tokens = tokenize(body)
 

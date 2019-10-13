@@ -41,9 +41,9 @@ function isEquiv(a,b) {
         if (!variables.has(a[j]) || !variables.has(b[j])) { j++; continue }
         a = replaceWith(a,a[j],c)
         b = replaceWith(b,b[j],c)
+        if (a === b) return true
         j++
     }
-    log('a,b =',a,b)
     return a === b
 }
 

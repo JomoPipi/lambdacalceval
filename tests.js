@@ -320,14 +320,21 @@ function runTests() {
 // numerator = fst
 // denominator = snd
 
-// +_8 = pos 8
-// -_6 = neg 6
-
-// -4 = neg 4 
-// +3 = pos 3
-
-// frac +_8 -_6
+// +_1 = pos 1
+// -_3 = neg 3
+// +_3 = pos 3
+// -_4 = neg 4
+// +_20 = pos 20
 
 
+// multFracs = λa b.(λNA NB DA DB.(λsign np dp.frac(sign np)(pos dp)) ((xor(≥0 NA)(≥0 NB)) pos neg)(*(abs NA)(abs NB))(*(abs DA)(abs DB)))(numerator a)(numberator b)(denominator a)(denominator b)
+
+// -4/20 = frac -_4 +_20
+
+// 20/-4 = frac +_20 -_4
+
+// -- multFracs 1/-3 3/2
+
+// multFracs   -4/20   20/-4
 
 
