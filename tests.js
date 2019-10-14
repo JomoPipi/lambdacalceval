@@ -1,4 +1,157 @@
-const inputOutput = [
+const test2 = [`
+true  = λ a b . a
+false = λ a b . b
+if    = λ c t e.c t e
+and   = λ a b . a (b true 0) 0
+not   = λ b . b false true
+or    = λ a b . a true (b true 0)
+xor   = λ a b . a (b false true) (b true false)
+
+-- functions
+Y     = λ y . (λx.y(x x)) (λx.y(x x)) 
+§     = λ p.[](snd p)(+(snd p))
+[]    = λ a b s . s a b 
+[     = λ a , b ] s . s a b -- different list syntax
+fst   = λ p . p true
+snd   = λ p . p false
+
+0 = λ a b . b
+1 = + 0
+2 = + 1
+3 = + 2
+4 = + 3
+5 = + 4
+6 = + 5
+7 = + 6
+8 = + 7
+9 = + 8
+10 = + 9
+11 = + 10
+12 = + 11
+13 = + 12
+14 = + 13
+15 = + 14
+16 = + 15
+17 = + 16
+18 = + 17
+19 = + 18
+20 = + 19
+
+min = λ a b . ˂ a b a b
+max = λ a b . ˃ a b a b
++   = λ w y x . y ( w y x )
+*   = λ a b f . a (b f)
+-1  = λ n . fst (n § ([] 0 0))
+-   = λ a b . b -1 a
+==0 = λ n . n (λx.false) true
+≥   = λ a b . ==0 (- b a)
+˃   = λ a b . not (≥ b a)
+≤   = λ a b . ==0 (- a b)
+˂   = λ a b . not (≥ a b)
+==  = λ a b . ==0 ((- a b) + (- b a)) 
+
+-- 1: less, 2: equal, 3: greater
+cmp = λ a b . (˂ a b) 1 ((˃ a b) 3 2)
+
+-- "construct" positive
+pos = λ n . [] true n
+
+-- "construct" negative
+neg = λ n . [] false n
+
+≥0  = fst
+
+˂0  = λ n . not (≥0 n)
+
+-- cmpInts = λ a b .
+
+abs = snd
+
+invert = λ n . [(˂0 n),(abs n)] -- additive inverse
+
+
+add = λ a b . (λ A B C D . (xor C D)   ( (˃ A B) ([] C (- A B)) [] D (- B A) )   ([] C (A + B))) (abs a) (abs b) (≥0 a) (≥0 b)
+
+-- sub = λ a b . add a ([] (˂0 b) (abs b))
+
+sub = λ a b . add a (invert b)
+
+
+/% = λ r a b . ˂ a b 0 (+ (r (- a b) b))
+
+%% = λ r a b . ˂ a b a (r (- a b) b)
+
+/ = λ a b . Y /% a b
+% = λ a b . Y %% a b
+
+factorial% = λ r n . ==0 n 1 ( * n (r (-1 n)))
+
+factorial = λ n . Y factorial% n
+
+-- 6. Define the rational numbers as pairs of integers.
+-- 7. Define functions for the addition, subtraction, multiplication and division of
+-- rationals
+
+
+
+-- are a and b both divisible by n?
+isCommonDiv = λ a b n . and (==0 (% a n)) (==0 (% b n))
+
+-- natRange 2 (min a b)
+
+-- findCommonDiv returns 0 if none was found
+findCommonDiv% = λ r a b i end. == i end 0 ( isCommonDiv a b i i (r a b (+ i) end) )
+
+findCommonDiv = λ a b . Y findCommonDiv% a b 2 (+ (min a b))
+
+
+simplify% = λ r n d . (λx. ==0 x ([] n d) (r (/ n x) (/ d x))) (findCommonDiv n d)
+
+simplify = λ n d . Y simplify% n d
+
+numerator = fst
+denominator = snd
+
+
+-_0 = neg 0 -- just incase
++_0 = pos 0
+-_1 = neg 1
++_1 = pos 1
+-_2 = neg 2
++_2 = pos 2
+-_3 = neg 3
++_3 = pos 3
+-_4 = neg 4
++_4 = pos 4
+-_5 = neg 5
++_5 = pos 5
+-_6 = neg 6
++_6 = pos 6
+-_7 = neg 7
++_7 = pos 7
+-_8 = neg 8
++_8 = pos 8
+-_9 = neg 9
++_9 = pos 9
+
+
+-- one is below 0, other is above 0
+icyhot = λ a b . xor (≥0 a) (≥0 b)
+
+-- constructs fractions
+frac = λ n d . (λ ND. (λ N D. (icyhot n d)   ([] (neg N) D)   ([] (pos N) D) ) (fst ND) (pos (snd ND))) (simplify (abs n) (abs d))
+
+
+-- multFracs = λa b.(λNA NB DA DB.(λsign np dp.frac(sign np)(pos dp)) ((icyhot NA NB) pos neg)(*(abs NA)(abs NB))(*(abs DA)(abs DB)))(numerator a)(numberator b)(denominator a)(denominator b)
+
+
+add +_5 -_7
+
+`, '-_2']
+
+
+
+const testCase0 = { name: 'basic tests', tests: [
 
     [
         '(λs z.s(s z))(λw y x.y(w y x))(λu v.u(u(u v)))',
@@ -54,7 +207,7 @@ const inputOutput = [
         P = λn.n Φ(λz.z 0 0)F
         Φ = λp z.z(S(p T))(p T)
         0 = λx y.y
-        F=0
+        F = 0
         T = λa b.a
         5 = λa b.a(a(a(a(a b))))
         
@@ -160,12 +313,12 @@ if    = λcond then else . cond then else
 9  = +1 8
 10 = +1 9
 
-＝0 = λn.n (λx.false) true
+==0 = λn.n (λx.false) true
 
-˃   = λ a b . not (＝0 (\` a - b))
-˂   = λ a b . not (＝0 (\` b - a))
+˃   = λ a b . not (==0 (\` a - b))
+˂   = λ a b . not (==0 (\` b - a))
 
-＝  = λ a b . \` (not (˂ a b)) and (not (˃ a b))
+==  = λ a b . \` (not (˂ a b)) and (not (˃ a b))
 
 
 
@@ -174,22 +327,24 @@ if    = λcond then else . cond then else
         `, '2'
 
     ]
-]
+]}
+
+
+
+
+
 
 
 
 
 function runTests() {
+    const testcases = [testCase0]
+
     const then = Date.now(), f = x=>(alert(x),log(x),x)
-    for (const [i,expected] of inputOutput) {
-        const actual = completeReduction(i)
-        const pass = alphaEquivalent(actual,expected)
-        if (!pass) return f(`
-        failed with input:  ${i}
-        actual:             ${actual}
-        expected:           ${expected}`)
-    }
-    return f(`Passed all the tests!! \n Time elapsed for all tests: ${Date.now() - then} ms`)
+
+    const fail = testcases.find(failure) || failure({name: 'test 2', tests:[test2]})
+
+    return f(fail || `Passed all the tests!! \n Time elapsed for all tests: ${Date.now() - then} ms`)
 }
 
 
@@ -199,142 +354,24 @@ function runTests() {
 
 
 
+function failure({name, tests}) {
+    for (const [input,expected] of tests) {
+        const actual = completeReduction(input)
+        const pass = alphaEquivalent(actual,expected)
+        if (!pass) return `
+        failed test         ${name}
+        failed with input:  ${input}
+        actual:             ${actual}
+        expected:           ${expected}`
+    }
+    return false
+}
 
 
 
-// my current code:
-
-// true  = λ a b . a
-// false = λ a b . b
-// if    = λ c t e.c t e
-// and   = λ a b . a (b true 0) 0
-// not   = λ b . b false true
-// or    = λ a b . a true (b true 0)
-// xor   = λ a b . a (b false true) (b true false)
-
-// -- functiions
-// Y     = λ y . (λx.y(x x)) (λx.y(x x)) 
-// `     = λ a op b . op a b
-// §     = λ p.[](snd p)(+(snd p))
-// []    = λ a b s . s a b 
-// [     = λ a , b ] s . s a b -- different list syntax
-// fst   = λ p . p true
-// snd   = λ p . p false
-
-// 0 = λ a b . b
-// 1 = + 0
-// 2 = + 1
-// 3 = + 2
-// 4 = + 3
-// 5 = + 4
-// 6 = + 5
-// 7 = + 6
-// 8 = + 7
-// 9 = + 8
-// 10 = + 9
-// 11 = + 10
-// 12 = + 11
-// 13 = + 12
-// 14 = + 13
-// 15 = + 14
-// 16 = + 15
-// 17 = + 16
-// 18 = + 17
-// 19 = + 18
-// 20 = + 19
-
-// min = λ a b . ˂ a b a b
-// max = λ a b . ˃ a b a b
-// +   = λ w y x . y ( w y x )
-// *   = λ a b f . a (b f)
-// -1  = λ n . fst (n § ([] 0 0))
-// -   = λ a b . b -1 a
-// ＝0 = λ n . n (λx.false) true
-// ≥   = λ a b . ＝0 (` b - a)
-// ˃   = λ a b . not (` b ≥ a)
-// ≤   = λ a b . ＝0 (` a - b)
-// ˂   = λ a b . not (` a ≥ b)
-// ＝  = λ a b . ＝0 ((- a b) + (- b a)) 
-
-// -- 1: less, 2: equal, 3: greater
-// cmp = λ a b . (` a ˂ b) 1 ((` a ˃ b) 3 2)
-
-// -- "construct" positive
-// pos = λ n . [] true n
-
-// -- "construct" negative
-// neg = λ n . [] false n
-
-// ≥0  = fst
-
-// ˂0  = λ n . not (≥0 n)
-
-// -- cmpInts = λ a b .
-
-// abs = snd
-
-// invert = λ n . [(˂0 n),(abs n)] -- additive inverse
 
 
-// add = λ a b . (λ A B C D . (xor C D)   ( (˃ A B) ([] C (- A B)) [] D (- B A) )   ([] C (A + B))) (abs a) (abs b) (≥0 a) (≥0 b)
-
-// -- sub = λ a b . add a ([] (˂0 b) (abs b))
-
-// sub = λ a b . add a (invert b)
 
 
-// /% = λ r a b . ˂ a b 0 (+ (r (- a b) b))
 
-// %% = λ r a b . ˂ a b a (r (- a b) b)
-
-// / = λ a b . Y /% a b
-// % = λ a b . Y %% a b
-
-// factorial% = λ r n . ＝0 n 1 ( * n (r (-1 n)))
-
-// factorial = λ n . Y factorial% n
-
-// -- 6. Define the rational numbers as pairs of integers.
-// -- 7. Define functions for the addition, subtraction, multiplication and division of
-// -- rationals
-
-
-// frac = λ n d . (λ ND. (λ N D. (xor (≥0 n) (≥0 d))   ([] (neg N) D)   ([] (pos N) D) ) (fst ND) (pos (snd ND))) (simplify (abs n) (abs d))
-
-
-// -- are a and b both divisible by n?
-// isCommonDiv = λ a b n . and (＝0 (% a n)) (＝0 (% b n))
-
-// -- natRange 2 (min a b)
-
-// -- findCommonDiv returns 0 if none was found
-// findCommonDiv% = λ r a b i end. ＝ i end 0 ( isCommonDiv a b i i (r a b (+ i) end) )
-
-// findCommonDiv = λ a b . Y findCommonDiv% a b 2 (+ (min a b))
-
-
-// simplify% = λ r n d . (λx. ＝0 x ([] n d) (r (/ n x) (/ d x))) (findCommonDiv n d)
-
-// simplify = λ n d . Y simplify% n d
-
-// numerator = fst
-// denominator = snd
-
-// +_1 = pos 1
-// -_3 = neg 3
-// +_3 = pos 3
-// -_4 = neg 4
-// +_20 = pos 20
-
-
-// multFracs = λa b.(λNA NB DA DB.(λsign np dp.frac(sign np)(pos dp)) ((xor(≥0 NA)(≥0 NB)) pos neg)(*(abs NA)(abs NB))(*(abs DA)(abs DB)))(numerator a)(numberator b)(denominator a)(denominator b)
-
-// -4/20 = frac -_4 +_20
-
-// 20/-4 = frac +_20 -_4
-
-// -- multFracs 1/-3 3/2
-
-// multFracs   -4/20   20/-4
-
-
+// goal: current a thunk, that thing that delays application and lets a value be reduced first.

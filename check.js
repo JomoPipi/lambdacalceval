@@ -15,25 +15,28 @@ function containsErrors(allLines) {
         variable names will be parsed unconditonally
     */
 
-    const lastLineWithEqualSign = allLines.reduce((a,v,i) => v.includes('=') ? i : a, -1)
+    const lastLineWithEqualSign = allLines.reduce((a,v,i) => v.includes(' = ') ? i : a, -1)
 
     for (let row = 0; row <= lastLineWithEqualSign; row++) {
         const line = allLines[row].trim()
         if (!line) continue
-        const col  = line.indexOf('=')
-        const col2 = line.lastIndexOf('=')
+        const col  = line.indexOf(' = ')
+        const col2 = line.lastIndexOf(' = ')
+
+        if (col < 0)
+            return doError("Declarations require one equal sign, surrounded by whitespace.", row)
 
         if (col !== col2) 
-            return doError("Names shouldn't contain equal signs, because we use them to declare names.", col2)
+            return doError("Only one equal sign is allowed per variable declaration.", row)
 
-        const [name,value] = line.split`=`.map(x=>x.trim())
+        const [name,value] = line.split` = `.map(x=>x.trim())
 
         VARIABLES[name] = finalStep(value)
 
         if (/[λ.() ]/.test(name)) 
-            return doError('Names shouldn\'t contains any of these characers <code>"λ.() ="</code>.', 0)
+            return doError('Names shouldn\'t contains any of these characers <code>"λ.() "</code>.', 0)
 
-        const error = anyError(value, row, col+1)
+        const error = anyError(value, row, col2+1)
         if (error) return error
     }
     
@@ -41,6 +44,9 @@ function containsErrors(allLines) {
         .map(s=>s.trim())
         .filter(s=>s).join` `
         .trim()
+        
+    if (expression.includes(' = ')) 
+        return doError('main expression cannot contain " = "')
 
     if (!expression) 
         return doError('Error: Missing main expression', lastLineWithEqualSign+1, null)

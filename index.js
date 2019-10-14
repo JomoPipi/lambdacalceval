@@ -1,22 +1,27 @@
 'use strict'
 
-const HISTORY = [], VARIABLES = {}, EXP_MEMO = {}, MAXIMUM_OVERDRIVE = D('optimize'), DIVERGENT = new Set(), NORMAL_FORM = {}
+function clearIt (obj) {
+    if (typeof obj.clear === 'function') return obj.clear()
+    for (const i in obj)
+        delete obj[i]
+}
 
-const treadCarefully = (exp,outer) => finalStep(betaReduce(exp, { outer_scope_awaits_lambda: outer, limit: 100 }))
+const HISTORY = [], VARIABLES = {}, EXP_MEMO = {}, NORMAL_FORM = {}, DIVERGENT = new Set(), MAXIMUM_OVERDRIVE = D('optimize')
+
+const treadCarefully = (exp,outer) => finalStep(betaReduce(exp, { outer_scope_awaits_lambda: outer, limit: 1000 }))
 
 D('code').focus()
 
-function completeReduction(code) {
+function completeReduction(code, optimize) {
     const then = Date.now()
     const allLines = code.split`\n`.map(s => s.split("--")[0]) 
     const improper = x =>                       // error style
         `<span style="color:#f44;">${x}</span>` 
 
 
-    HISTORY.length = 0                          // clear variables from the last time
-    for (const i in VARIABLES) delete VARIABLES[i]   
-    for (const i in DIVERGENT) delete DIVERGENT[i]      
-    for (const i in  EXP_MEMO) delete  EXP_MEMO[i]       
+    HISTORY.length = 0;                         // clear variables from the last time
+    [VARIABLES, EXP_MEMO, NORMAL_FORM, DIVERGENT].forEach(clearIt)
+
 
     const maybeError = containsErrors(allLines) // check for syntax errors
     if (maybeError.isError)
@@ -56,20 +61,20 @@ function completeReduction(code) {
 
 function condense(exp, i) {
     i = (i || 0)
-    if (i === 3) return exp // we don't need  to go too far
+    if (i === 9) return exp // we don't need  to go too far
     for (const key in VARIABLES) {
         const vk = VARIABLES[key]
         if (isEquiv(vk, exp)) return key
         if (DIVERGENT.has(key)) continue
         HISTORY.length = HISTORY.iter = 0
-        HISTORY.charLimit = vk.length * 20
+        HISTORY.charLimit = vk.length * 10000
         try {
             const reduced = NORMAL_FORM[key] || (NORMAL_FORM[key] = treadCarefully(vk, false))
             
             if (isEquiv(reduced, exp)) {
                 return key // this will probably be simpler than the expression.
             }
-        } catch (e) { log ('check out this error: ',e) }
+        } catch (e) { log (`check out this error with ${key}: `,e) }
     }
     if (exp[0] === λ) {
         const x = exp.indexOf('.')+1
@@ -174,8 +179,10 @@ function curryStep(exp) {
 function betaReduce(expr, options={}) {
     const {outer_scope_awaits_lambda, outsideWrap,limit,charLimit} = options
     if (limit) {
-        if (HISTORY.iter++ > limit || expr.length > charLimit)  
+        if (HISTORY.iter++ > limit || (charLimit && expr.length > charLimit)) { 
+            log(HISTORY.iter, limit, charLimit);
             throw "possible divergent expression"
+        }
     }
     const expand = x => (x in VARIABLES ? expand(VARIABLES[x]) : x)
     const exp = stripUselessParentheses(expr)
@@ -351,6 +358,7 @@ function tokenize(s) {
 
 
 function getTerms(s) {
+    if (!s) {log('s =',s); throw 'why is s falsy'}
     return [...s].reduce(([r,x,y,z],v) => {
         const a = v==='(', b = v===')', c = x===1, d = v===λ
         if (d && x === 0 && !y) { r.push(''); y=1 }

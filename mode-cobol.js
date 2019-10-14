@@ -21,13 +21,13 @@ var CobolHighlightRules = function() {
             regex : "[λ.]"
         }, {
             token : "variable",
-            regex : "(?=.*=)(.+?(?=\=))"
+            regex : /(?=.*\=)(.+?(?=(\s\=\s)))/
         }, {
             token : "string",
             regex : "[(]"
         }, {
             token : "string",
-            regex : "[=]"
+            regex : /\s[=]\s/
         }, {
             token : "string",
             regex : "[)]"
