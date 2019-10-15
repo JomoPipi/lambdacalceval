@@ -33,8 +33,20 @@ function runCode() {
 
 
 
-document.onkeydown = function(e) { // ctrl + enter to run code
+document.body.onkeydown = function(e) { // ctrl + enter to run code
   e.ctrlKey && (e.keyCode === 13 || e.keyCode === 83) && runCode() 
+
+  e.ctrlKey && e.keyCode === 81 && toggleNumbers(true)
+}
+
+
+
+
+
+
+
+function toggleNumbers(tgl) {
+  editor.renderer.setShowGutter(D('togglenumbers').checked ^= +tgl);
 }
 
 
@@ -47,16 +59,12 @@ document.onkeydown = function(e) { // ctrl + enter to run code
 Set_Up_Editor: {
     var editor = window.ace.edit(D('code'))
     const options = {
-      enableBasicAutocompletion: true, // the editor completes the statement when you hit Ctrl + Space
-      enableLiveAutocompletion: true, // the editor completes the statement while you are typing
       showPrintMargin: false, // hides the vertical limiting strip
       fontSize: "100%",
       maxLines: 10000,
-      // showGutter:false, // perhaps it will be toggle-able in the future
       tabSize: 2
     }
     editor.setAutoScrollEditorIntoView(true);
-    // remove pretentious punctuation (that might come from a phone):
     let fromServer
     editor.getSession().on('change', function(e) {
         const newHeight = editor.getSession().getScreenLength() * 
@@ -91,11 +99,11 @@ Set_Up_Editor: {
 0 = λa b.b
 1 = λa b.a b
 2 = λa b.a(a b)
-addOne = λ w y x . y (w y x)
++ = λ w y x . y (w y x)
 
 -- Following the last variable assignment should be the expression to be evaluated:
 
-    addOne 1
+    + 1
 `)
     D('code').style.borderRadius = '10px'
     editor.setOptions(options);

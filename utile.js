@@ -6,6 +6,17 @@
 
 
 
+function matchedParenthesis(exp) {
+    return ![...exp].reduce((a,v) => a < 0 ? a : a + ({'(':1,')':-1}[v]||0),0)
+}
+
+
+
+
+
+
+
+
 function alphaEquivalent(a,b) {
 
     if (a.length !== b.length) 
@@ -25,6 +36,7 @@ function alphaEquivalent(a,b) {
 
 function isEquiv(a,b) {
     // hey... checking functions for equality reduces to the halting problem.
+    // this can only go so far.
     const [aterms,bterms] = [a,b].map(getTerms)
     const [al,bl] = [aterms.length,bterms.length]
     if (al !== bl)
@@ -34,7 +46,7 @@ function isEquiv(a,b) {
         return aterms.every((x,i) => isEquiv(x, bterms[i]))
 
     const variables = new Set((a+b).split(/[λ.() ]+/))
-    for(let i=65,j=0; a[j]; i++) {
+    for(let i=97,j=0; a[j]; i++) {
         const c = String.fromCharCode(i);
         if ('λ.() '.includes(a[j])) j++
         if (variables.has(c)) continue
@@ -55,9 +67,11 @@ function isEquiv(a,b) {
 
 
 function replaceWith(str,find,replacement) { 
-    const i = str.indexOf(find)
-    return i < 0 ? str : replaceWith(
-        str.slice(0,i) + replacement + str.slice(i + find.length), find, replacement)
+    for (let i = 0; str[i]; i++) 
+        if (str.startsWith(find,i)) 
+            str = str.slice(0,i) + replacement + str.slice(i + find.length)
+
+    return str
 }
 
 
@@ -77,23 +91,13 @@ function dim(x) {
 
 
 
-function makeWrap(oldwrap, a, b, NoP) {
-    const [l,r] = NoP ? ['',''] : '()'
-    return s => oldwrap(
-        dim((a||'') + l) + s +
-        dim(r + (b||''))) 
+
+function clearIt (obj) {
+    if (typeof obj.clear === 'function') return obj.clear()
+    for (const i in obj)
+        delete obj[i]
 }
 
-
-
-
-
-
-
-
-function dim(x) {
-    return `<span class="dim" style="color:#777;"> ${x} </span>`
-}
 
 
 

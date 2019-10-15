@@ -2,9 +2,7 @@
 
 
 
-function matchedParenthesis(exp) {
-  return ![...exp].reduce((a,v) => a < 0 ? a : a + ({'(':1,')':-1}[v]||0),0)
-}
+
 
 
 
@@ -30,6 +28,9 @@ function containsErrors(allLines) {
             return doError("Only one equal sign is allowed per variable declaration.", row)
 
         const [name,value] = line.split` = `.map(x=>x.trim())
+
+        if (VARIABLES[name])
+            return doError(`${name} has already been declared.`, row)
 
         VARIABLES[name] = finalStep(value)
 
@@ -60,6 +61,10 @@ function containsErrors(allLines) {
 
     return { value: expression }
 }
+
+
+
+
 
 
 
@@ -109,6 +114,10 @@ function anyError(line, row=0, ioffset=0) {
     
     return null
 }
+
+
+
+
 
 
 

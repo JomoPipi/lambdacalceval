@@ -1,14 +1,9 @@
 'use strict'
 
-function clearIt (obj) {
-    if (typeof obj.clear === 'function') return obj.clear()
-    for (const i in obj)
-        delete obj[i]
-}
 
 const HISTORY = [], VARIABLES = {}, EXP_MEMO = {}, NORMAL_FORM = {}, DIVERGENT = new Set(), MAXIMUM_OVERDRIVE = D('optimize')
 
-const treadCarefully = (exp,outer) => finalStep(betaReduce(exp, { outer_scope_awaits_lambda: outer, limit: 200 }))
+const treadCarefully = (exp,outer,limit) => finalStep(betaReduce(exp, { outer_scope_awaits_lambda: outer, limit: limit||200 }))
 
 D('code').focus()
 
@@ -49,6 +44,7 @@ function completeReduction(code, optimize) {
     if (tokenize(expression).length === 1)      // you probably want it expanded, if it's a definition, in this case
         return exp                             
 
+    log('\n\nexp = ',exp)
     return finalStep(condense(exp))
 }
 
@@ -59,22 +55,27 @@ function completeReduction(code, optimize) {
 
 
 
-function condense(exp, i) {
-    i = (i || 0)
+function condense(exp, i=0) {
+    log('\n\nexp = ',exp)
     if (i === 9) return exp // we don't need  to go too far
     for (const key in VARIABLES) {
-        const vk = VARIABLES[key]
-        if (isEquiv(vk, exp)) return key
+        const value = VARIABLES[key]
+        log('key,value,exp',key,value,exp)
+        if (isEquiv(value, exp)) return key
         if (DIVERGENT.has(key)) continue
         HISTORY.length = HISTORY.iter = 0
-        HISTORY.charLimit = vk.length * 10000
+        HISTORY.charLimit = value.length * 10000
         try {
-            const reduced = NORMAL_FORM[key] || (NORMAL_FORM[key] = treadCarefully(vk, false))
-            
-            if (isEquiv(reduced, exp)) {
-                return key // this will probably be simpler than the expression.
+            for(let reduced, last=0; last !== reduced; last=reduced) {
+                reduced = NORMAL_FORM[key] || (NORMAL_FORM[key] = treadCarefully(value, false, 1000))
+
+                if (isEquiv(reduced, exp))
+                    return key
             }
-        } catch (e) { log (`check out this error with ${key}: `,e) }
+        } catch (e) { 
+            log (`check out this error with ${key}: `,e);
+            DIVERGENT.add(key)
+        }
     }
     if (exp[0] === λ) {
         const x = exp.indexOf('.')+1
@@ -92,7 +93,7 @@ function condense(exp, i) {
 
 
 function finalize(exp) {
-    return finalStep( betaReduce( exp ) )
+    return finalStep( betaReduce( exp, {} ) )
 }
 
 
@@ -132,15 +133,7 @@ function curryStep(exp) {
     // if variables in heads are duplicated, we just have to rename the "victims" of duplication.
     // ex: λa b. false a   ->   λa x b.b
     const allvars = new Set(tokenize(exp).filter(x => !/[.λ()]/.test(x) ))
-    const nextFree = _ => {
-        for(let i = 97;;i++) {
-            const c = String.fromCharCode(i)
-            if (!allvars.has(c)) {
-                allvars.add(c)
-                return c
-            }
-        }
-    }
+    const nextFree = makeNextFreeVarFunc(allvars)
     exp = exp.replace(/(\.λ|  )/g,' ')   
     // clear out the duplicates in the heads
     const result = []
@@ -175,8 +168,8 @@ function curryStep(exp) {
 
 
 
-
-function betaReduce(expr, options={}) {
+// betaReduce :: (String, Object) -> String
+function betaReduce(expr, options) {
     const {outer_scope_awaits_lambda, outsideWrap ,limit,charLimit} = options
     if (limit) {
         if (HISTORY.iter++ > limit || (charLimit && expr.length > charLimit)) { 
@@ -285,6 +278,26 @@ function gatherTerms(terms) {
 
 
 
+function makeNextFreeVarFunc(allvars) {
+    return function() {
+        for (let i = 1;; i++) {
+            for(let j = 97; j<123; j++) {
+                const v = String.fromCharCode(j).repeat(i)
+                if (!allvars.has(v)) {
+                    allvars.add(v)
+                    return v
+                }
+            }
+        }
+    }
+}
+
+
+
+
+
+
+
 
 function applyAB(a,b) {
     /* 
@@ -296,15 +309,7 @@ function applyAB(a,b) {
     // rename the other variables if they are equal to b or variables within b
     const btokens = new Set(tokenize(b))
     const allvars = new Set(variables.concat(b))
-    const nextFree = _ => {
-        for(let i = 97;;i++) {
-            const c = String.fromCharCode(i)
-            if (!allvars.has(c)) {
-                allvars.add(c)
-                return c
-            }
-        }
-    }
+    const nextFree = makeNextFreeVarFunc(allvars)
     const replaceMap = variables.slice(1).reduce((a,v) => btokens.has(v) ? (a[v] = nextFree(), a) : a, {})
     for (const i in variables) {
         if (replaceMap[variables[i]])

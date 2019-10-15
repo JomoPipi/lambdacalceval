@@ -1,0 +1,76 @@
+
+html {
+    scroll-behavior: smooth;
+}
+body { 
+    margin: 2%;
+    background-color: #272727;
+}
+code { 
+    font-weight: bold; 
+} 
+#code {
+    width:100%;
+    min-height:100px;
+}
+.maintext {
+    color:#eee;
+}
+.light-theme {
+    color:#222;
+}
+.output {
+    font-family: monospace;
+    font-size: 1.5em;
+    font-weight: 500;
+    background-color:#151515;
+    color:white;
+}
+.output-steps { 
+    border-radius: 10px;
+    width: 100%;
+    font-family: monospace;
+    background-color:#151515;
+    color:#dfd;
+    display: block;
+    font-size:10px;
+    max-height: 0;
+    overflow: auto; 
+    transition: max-height 1s ease-out;
+}
+.lt-output {
+    color:#222;
+    background-color: #c7c7c7;
+}
+.lt-steps {
+    color:#404;
+    background-color: #ddd;
+}
+.light-body {
+    background-color: #fff;
+}
+.mybtn {
+    background: #555;
+    color:#bbb;
+    border-radius: 10px;
+    font-size: 15px;
+}
+.mybtn:focus { outline: none; }
+.mybtndark {
+    background: #eee;
+    color:#333;
+}
+#run-btn {
+    width:10%; height: 50px; float: left; border:none;
+    border-top-right-radius: 10px; border-bottom-right-radius: 10px;
+    color:white;background-color: rgb(4, 73, 57);
+    font-size: 1.25em;
+}
+#run-options {
+    text-align: left;
+    border-radius: 10px;
+    border: 1px solid white;
+    margin-bottom: 1%;
+    display: none;
+    height: 100px;
+}

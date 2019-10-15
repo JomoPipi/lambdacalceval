@@ -144,8 +144,8 @@ frac = λ n d . (λ ND. (λ N D. (icyhot n d)   ([] (neg N) D)   ([] (pos N) D) 
 
 -- multFracs = λa b.(λNA NB DA DB.(λsign np dp.frac(sign np)(pos dp)) ((icyhot NA NB) pos neg)(*(abs NA)(abs NB))(*(abs DA)(abs DB)))(numerator a)(numberator b)(denominator a)(denominator b)
 
+frac +_4 -_2
 
-add +_5 -_7
 
 `, '-_2']
 
@@ -214,7 +214,7 @@ const testCase0 = { name: 'basic tests', tests: [
         P 5
         `,
         'λi j.i(i(i(i j)))'
-    ],
+    ],     
 
     [
         `
