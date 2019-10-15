@@ -20,7 +20,8 @@ function D(x) { return document.getElementById(x) }
 function runCode() {
   D('output').innerHTML = 'ß-reduction in process...'
   setTimeout(_ => (
-    D('output').innerHTML = completeReduction( window.ace.edit(D('code')).getSession().getValue() ), 
+    D('output').innerHTML = completeReduction( 
+      window.ace.edit(D('code')).getSession().getValue(), D('optimize').checked ), 
     D('code').focus()),
     100 + Math.random()*200|0)
 }

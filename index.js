@@ -8,7 +8,7 @@ function clearIt (obj) {
 
 const HISTORY = [], VARIABLES = {}, EXP_MEMO = {}, NORMAL_FORM = {}, DIVERGENT = new Set(), MAXIMUM_OVERDRIVE = D('optimize')
 
-const treadCarefully = (exp,outer) => finalStep(betaReduce(exp, { outer_scope_awaits_lambda: outer, limit: 1000 }))
+const treadCarefully = (exp,outer) => finalStep(betaReduce(exp, { outer_scope_awaits_lambda: outer, limit: 200 }))
 
 D('code').focus()
 
@@ -177,7 +177,7 @@ function curryStep(exp) {
 
 
 function betaReduce(expr, options={}) {
-    const {outer_scope_awaits_lambda, outsideWrap,limit,charLimit} = options
+    const {outer_scope_awaits_lambda, outsideWrap ,limit,charLimit} = options
     if (limit) {
         if (HISTORY.iter++ > limit || (charLimit && expr.length > charLimit)) { 
             log(HISTORY.iter, limit, charLimit);
@@ -188,16 +188,17 @@ function betaReduce(expr, options={}) {
     const exp = stripUselessParentheses(expr)
     const terms = getTerms(exp)
     const memokey = terms.slice(0,2).join`:`
+    const [leftW,rightW, NoP] = outsideWrap || ['','','']
 
     if (EXP_MEMO[memokey]) 
-        return  betaReduce( EXP_MEMO[memokey] + gatherTerms(terms.slice(2)) , options )
+        return betaReduce( EXP_MEMO[memokey] + gatherTerms(terms.slice(2)) , options )
 
     let a = expand(terms[0])
     const b = terms[1] 
 
     if (a == null) throw 'something is wrong'
 
-    const wrap = outsideWrap || (x => x)
+    const wrap = (x, [l,r] = NoP ? ['',''] : '()') => dim(leftW + l) + x + dim(r + rightW)
     HISTORY.push( wrap(exp) )
 
 
@@ -227,7 +228,7 @@ function betaReduce(expr, options={}) {
             if (a[0] === λ) { // we have a lambda, so return head + betaReduce(body)
                 const i = a.indexOf('.') 
                 return a.slice(0, i+1) + betaReduce(a.slice(i+1), {
-                    outsideWrap: makeWrap(wrap, a.slice(0,i+1), '', true),
+                    outsideWrap: [leftW + a.slice(0,i+1), rightW, true],
                     outer_scope_awaits_lambda, 
                     charLimit,
                     limit
@@ -239,7 +240,7 @@ function betaReduce(expr, options={}) {
 
 
     if (a[0] !== λ) { // well, it needs to be a lambda in order to apply it to b
-        a = betaReduce(a, { outer_scope_awaits_lambda: true, outsideWrap: makeWrap(wrap, '', gatherTerms(terms.slice(1))), limit, charLimit })
+        a = betaReduce(a, { outer_scope_awaits_lambda: true, outsideWrap: [leftW, rightW + gatherTerms(terms.slice(1)), ''], limit, charLimit })
         // notice that we set outer_scope_awaits_lambda to true.
         // this means that the reductions will stop when it becomes a lambda, 
         // even if it's not yet fully reduced.
@@ -247,9 +248,9 @@ function betaReduce(expr, options={}) {
         if (a[0] !== λ) { // it didn't reduce to a lambda, so we can't reduce further on this scope
             const result = gatherTerms(terms.slice(1).reduce((a,term,i) => (
                 [...a, betaReduce(term, {
-                     outsideWrap: makeWrap(   wrap,   gatherTerms(a),   gatherTerms(terms.slice(1).slice(i+2))   ), 
-                     charLimit,
-                     limit
+                    outsideWrap: [leftW + gatherTerms(a), rightW + gatherTerms(terms.slice(1).slice(i+2))],
+                    charLimit,
+                    limit
                 })]
         ), [a]))
 

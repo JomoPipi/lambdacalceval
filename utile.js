@@ -67,20 +67,6 @@ function replaceWith(str,find,replacement) {
 
 
 
-function makeWrap(oldwrap, a, b, NoP) {
-    const [l,r] = NoP ? ['',''] : '()'
-    return s => oldwrap(
-        dim((a||'') + l) + s +
-        dim(r + (b||''))) 
-}
-
-
-
-
-
-
-
-
 function dim(x) {
     return `<span class="dim" style="color:#777;"> ${x} </span>`
 }
