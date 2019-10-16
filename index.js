@@ -44,7 +44,7 @@ function completeReduction(code, optimize) {
     if (tokenize(expression).length === 1)      // you probably want it expanded, if it's a definition, in this case
         return exp                             
 
-    log('\n\nexp = ',exp)
+    log('\n\n here\'es the exp!!exp = ',exp)
     return finalStep(condense(exp))
 }
 
@@ -60,7 +60,7 @@ function condense(exp, i=0) {
     if (i === 9) return exp // we don't need  to go too far
     for (const key in VARIABLES) {
         const value = VARIABLES[key]
-        log('key,value,exp',key,value,exp)
+        log(['key','value','exp',key,value,exp,'i =',i].join(`     `))
         if (isEquiv(value, exp)) return key
         if (DIVERGENT.has(key)) continue
         HISTORY.length = HISTORY.iter = 0
@@ -68,7 +68,9 @@ function condense(exp, i=0) {
         try {
             for(let reduced, last=0; last !== reduced; last=reduced) {
                 reduced = NORMAL_FORM[key] || (NORMAL_FORM[key] = treadCarefully(value, false, 1000))
-
+                if (reduced.length !==  exp.length) 
+                    continue
+                if (key === '-_2') log(reduced)
                 if (isEquiv(reduced, exp))
                     return key
             }

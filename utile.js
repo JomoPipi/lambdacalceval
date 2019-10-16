@@ -34,29 +34,29 @@ function alphaEquivalent(a,b) {
 
 
 
+function equivFormat(x, outer_scope={}) {
+    
+    if (x[0] === λ) {
+        let i = x.indexOf('.')
+        const params = x.slice(1,i).trim().split` `
+        params.forEach((p,i) => x = replaceWith(x,p,''+i))
+        i = x.indexOf('.')+1
+        return x.slice(0,i) + equivFormat(x.slice(i))
+    }
+
+    const terms = getTerms(x)
+    return terms.length === 1 ? terms[0][0] === λ ? equivFormat(terms[0]) : terms[0] : gatherTerms(terms.map(equivFormat))
+
+}
+
 function isEquiv(a,b) {
-    // hey... checking functions for equality reduces to the halting problem.
-    // this can only go so far.
-    const [aterms,bterms] = [a,b].map(getTerms)
-    const [al,bl] = [aterms.length,bterms.length]
-    if (al !== bl)
+    if (/[0-9]/.test(a)) // since renaming the variables with numbers, want to make sure nothing bad happens.
+        return a === b
+
+    if (a.length !== b.length)
         return false
 
-    if (al > 1) 
-        return aterms.every((x,i) => isEquiv(x, bterms[i]))
-
-    const variables = new Set((a+b).split(/[λ.() ]+/))
-    for(let i=97,j=0; a[j]; i++) {
-        const c = String.fromCharCode(i);
-        if ('λ.() '.includes(a[j])) j++
-        if (variables.has(c)) continue
-        if (!variables.has(a[j]) || !variables.has(b[j])) { j++; continue }
-        a = replaceWith(a,a[j],c)
-        b = replaceWith(b,b[j],c)
-        if (a === b) return true
-        j++
-    }
-    return a === b
+    return equivFormat(a) === equivFormat(b)
 }
 
 

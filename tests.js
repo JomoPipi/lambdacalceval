@@ -147,7 +147,7 @@ frac = λ n d . (λ ND. (λ N D. (icyhot n d)   ([] (neg N) D)   ([] (pos N) D) 
 frac +_4 -_2
 
 
-`, '-_2']
+`, 'λs.s -_2 +_1']
 
 
 
