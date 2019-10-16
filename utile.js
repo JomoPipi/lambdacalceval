@@ -34,24 +34,24 @@ function alphaEquivalent(a,b) {
 
 
 
-function equivFormat(x, outer_scope={}) {
+function equivFormat(x, y=0) {
     
     if (x[0] === λ) {
-        let i = x.indexOf('.')
-        const params = x.slice(1,i).trim().split` `
-        params.forEach((p,i) => x = replaceWith(x,p,''+i))
-        i = x.indexOf('.')+1
-        return x.slice(0,i) + equivFormat(x.slice(i))
+        const i = x.indexOf('.')
+        const params = x.slice(1,i).trim().split` ` // this is safe because numbers are never in params
+        params.forEach((p,i) => x = replaceWith(x,p,''+(i+y)))
+        const j = x.indexOf('.')+1
+        return x.slice(0,j) + equivFormat(x.slice(j), params.length + y)
     }
 
     const terms = getTerms(x)
-    return terms.length === 1 ? terms[0][0] === λ ? equivFormat(terms[0]) : terms[0] : gatherTerms(terms.map(equivFormat))
+    return terms.length === 1 ? 
+        terms[0][0] === λ ? equivFormat(terms[0], y) : terms[0] : 
+        gatherTerms(terms.map((x,i) => equivFormat(x, y + 42*(i+1))))
 
 }
 
 function isEquiv(a,b) {
-    if (/[0-9]/.test(a)) // since renaming the variables with numbers, want to make sure nothing bad happens.
-        return a === b
 
     if (a.length !== b.length)
         return false
@@ -81,7 +81,11 @@ function replaceWith(str,find,replacement) {
 
 
 
-function dim(x) {
+function dim(x, a) {
+    const space = 180
+    const y = x.length
+    const z = space/2 > a ? space/2 - a : 0
+    if (y > z) x = x.slice(0, z) + '  ... ' + x.slice(y - z)
     return `<span class="dim" style="color:#777;"> ${x} </span>`
 }
 
@@ -93,7 +97,6 @@ function dim(x) {
 
 
 function clearIt (obj) {
-    if (typeof obj.clear === 'function') return obj.clear()
     for (const i in obj)
         delete obj[i]
 }
@@ -119,13 +122,14 @@ function escapeHTML(x) {
 
 function updateHistory(exp, then) {
     const hstry = HISTORY.map(escapeHTML)
-    const index = hstry.reduceRight((a,v,i) =>  // find the first index, from the right, where exp === history[i]
-        a == null && tokenize(finalStep(v))
-        .every((x,i) => 
-            tokenize(exp)[i] === x) ? i : a, 
-    null)
-    if (index) HISTORY.splice(index, Infinity)  // we don't need to see any steps that happen after we get the result)
-    
+    const l = hstry.length
+    for (var i = l-1, limit = Math.max(1,l-10); ; i--) {
+        if (i <= limit) { i = null; break }
+        const v = hstry[i]
+        if (tokenize(finalStep(v)).every((x,j) => tokenize(exp)[j] === x))
+            break;
+    }
+    if (i) HISTORY.splice(i, Infinity)  // we don't need to see any steps that happen after we get the result)
     
     const finalResultAndStats = exp +           // enjoy some nice measurements
     '<br> <br> <br> <span style="display: inline-block; text-align:left; font-size: 1.5em;">' + 

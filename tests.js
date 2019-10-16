@@ -141,14 +141,25 @@ icyhot = λ a b . xor (≥0 a) (≥0 b)
 -- constructs fractions
 frac = λ n d . (λ ND. (λ N D. (icyhot n d)   ([] (neg N) D)   ([] (pos N) D) ) (fst ND) (pos (snd ND))) (simplify (abs n) (abs d))
 
+*abs = λ a b . *(abs a)(abs b)
 
--- multFracs = λa b.(λNA NB DA DB.(λsign np dp.frac(sign np)(pos dp)) ((icyhot NA NB) pos neg)(*(abs NA)(abs NB))(*(abs DA)(abs DB)))(numerator a)(numberator b)(denominator a)(denominator b)
+multFracs = λ a b . (λna nb da db . frac ((icyhot na nb neg pos) (*abs na nb)) (pos (*abs da db)) ) (fst a) (fst b) (snd a) (snd b)
 
-frac +_4 -_2
+divideFracs = λ a b . (λ b . multFracs a b ) (frac (snd b) (fst b))
+
+-- addFracs = λ a b . 
+
+-2/1 = frac +_2 -_1
+1/4  = frac -_1 -_4
 
 
-`, 'λs.s -_2 +_1']
+divideFracs -2/1 1/4
 
+
+
+
+`, 'λx.x -_8 +_1']
+// ^^^ run this twice and you'll see an issue.
 
 
 const testCase0 = { name: 'basic tests', tests: [

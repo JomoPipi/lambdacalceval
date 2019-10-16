@@ -14,8 +14,9 @@ function completeReduction(code, optimize) {
         `<span style="color:#f44;">${x}</span>` 
 
 
-    HISTORY.length = 0;                         // clear variables from the last time
-    [VARIABLES, EXP_MEMO, NORMAL_FORM, DIVERGENT].forEach(clearIt)
+    HISTORY.length = 0                         // clear variables from the last time
+    DIVERGENT.clear();
+    [VARIABLES, EXP_MEMO, NORMAL_FORM].forEach(clearIt)
 
 
     const maybeError = containsErrors(allLines) // check for syntax errors
@@ -57,7 +58,7 @@ function completeReduction(code, optimize) {
 
 function condense(exp, i=0) {
     log('\n\nexp = ',exp)
-    if (i === 9) return exp // we don't need  to go too far
+    if (i === 20) return exp // we don't need  to go too far
     for (const key in VARIABLES) {
         const value = VARIABLES[key]
         log(['key','value','exp',key,value,exp,'i =',i].join(`     `))
@@ -66,7 +67,7 @@ function condense(exp, i=0) {
         HISTORY.length = HISTORY.iter = 0
         HISTORY.charLimit = value.length * 10000
         try {
-            for(let reduced, last=0; last !== reduced; last=reduced) {
+            for(let reduced, last=' '; last !== reduced; last=reduced) {
                 reduced = NORMAL_FORM[key] || (NORMAL_FORM[key] = treadCarefully(value, false, 1000))
                 if (reduced.length !==  exp.length) 
                     continue
@@ -173,8 +174,9 @@ function curryStep(exp) {
 // betaReduce :: (String, Object) -> String
 function betaReduce(expr, options) {
     const {outer_scope_awaits_lambda, outsideWrap ,limit,charLimit} = options
+    HISTORY.iter++
     if (limit) {
-        if (HISTORY.iter++ > limit || (charLimit && expr.length > charLimit)) { 
+        if (HISTORY.iter > limit || (charLimit && expr.length > charLimit)) { 
             log(HISTORY.iter, limit, charLimit);
             throw "possible divergent expression"
         }
@@ -193,17 +195,18 @@ function betaReduce(expr, options) {
 
     if (a == null) throw 'something is wrong'
 
-    const wrap = (x, [l,r] = NoP ? ['',''] : '()') => dim(leftW + l) + x + dim(r + rightW)
-    HISTORY.push( wrap(exp) )
+    const wrap = (x, [l,r] = NoP ? ['',''] : '()') => dim(leftW + l, x.length) + x + dim(r + rightW, x.length)
+    if (!MAXIMUM_OVERDRIVE.checked) {
+        const last = wrap(exp)
+        HISTORY.push( last ) 
+        if (a !== terms[0]) {
+            const newExp = `(${a})` + gatherTerms(terms.slice(1))
 
-
-    if (a !== terms[0] && !terms[0].includes(a)) {
-        const newExp = `(${a})` + gatherTerms(terms.slice(1))
-
-        if (HISTORY.length && escapeHTML(HISTORY.slice(-1)[0]).includes(newExp))
-            HISTORY.pop() // filter out duplicate history
-            
-        HISTORY.push( wrap( newExp ) )
+            if (HISTORY.length && escapeHTML(last).includes(newExp))
+                HISTORY.pop() // filter out duplicate history
+                
+            HISTORY.push( wrap( newExp ) )
+        }
     }
         
 
@@ -366,7 +369,10 @@ function tokenize(s) {
 
 
 function getTerms(s) {
-    if (!s) {log('s =',s); throw 'why is s falsy'}
+    if (!s) {
+        log('s =',s)
+        throw 'why is s falsy'
+    }
     return [...s].reduce(([r,x,y,z],v) => {
         const a = v==='(', b = v===')', c = x===1, d = v===λ
         if (d && x === 0 && !y) { r.push(''); y=1 }
