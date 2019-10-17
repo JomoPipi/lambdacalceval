@@ -25,6 +25,7 @@ function completeReduction(code, optimize) {
 
     for (const name in VARIABLES) {
         const value = VARIABLES[name]
+        HISTORY.length = HISTORY.iter = 0
         try {
             const x = treadCarefully(value, true)
             if (MAXIMUM_OVERDRIVE.checked) 
@@ -71,7 +72,14 @@ function condense(exp, i=0) {
                 reduced = NORMAL_FORM[key] || (NORMAL_FORM[key] = treadCarefully(value, false, 1000))
                 if (reduced.length !==  exp.length) 
                     continue
-                if (key === '-_2') log(reduced)
+
+                if (key === '-_8') {
+                    console.log('gello',key)
+                }
+                
+                if ([...reduced].some((c,i) => 'λ.()'.includes(c) && c !== exp[i])) 
+                    continue
+                    
                 if (isEquiv(reduced, exp))
                     return key
             }
