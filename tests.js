@@ -151,6 +151,7 @@ divideFracs = λ a b . (λ b . multFracs a b ) (frac (snd b) (fst b))
 
 -2/1 = frac +_2 -_1
 1/4  = frac -_1 -_4
+-8/1 = frac +_8 -_1
 
 
 divideFracs -2/1 1/4
@@ -158,7 +159,7 @@ divideFracs -2/1 1/4
 
 
 
-`, 'λx.x -_8 +_1']
+`, '-8/1']
 
 
 const testCase0 = { name: 'basic tests', tests: [

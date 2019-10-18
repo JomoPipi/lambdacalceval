@@ -253,7 +253,8 @@ function betaReduce(expr, options) {
 
         if (a[0] !== λ) { // it didn't reduce to a lambda, so we can't reduce further on this scope
             const result = gatherTerms(terms.slice(1).reduce((a,term,i) => (
-                [...a, betaReduce(term, {
+                // the ternary is there to stop the expansion when we don't need to it anymore. eg: s 1 2 stays like that
+                [...a, tokenize(term).length === 1 ? term : betaReduce(term, {
                     outsideWrap: [leftW + gatherTerms(a), rightW + gatherTerms(terms.slice(1).slice(i+2))],
                     charLimit,
                     limit
