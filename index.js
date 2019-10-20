@@ -5,6 +5,8 @@ const HISTORY = [], VARIABLES = {}, EXP_MEMO = {}, NORMAL_FORM = {}, DIVERGENT =
 
 const treadCarefully = (exp,outer,limit) => finalStep(betaReduce(exp, { outer_scope_awaits_lambda: outer, limit: limit||200 }))
 
+const CheckIfWeTerminatedReductionSet = new Set(λ)
+
 D('code').focus()
 
 function completeReduction(code, optimize) {
@@ -15,13 +17,16 @@ function completeReduction(code, optimize) {
 
 
     HISTORY.length = 0                         // clear variables from the last time
-    DIVERGENT.clear();
-    [VARIABLES, EXP_MEMO, NORMAL_FORM].forEach(clearIt)
+    DIVERGENT.clear()
+    CheckIfWeTerminatedReductionSet.clear()
+    ;[VARIABLES, EXP_MEMO, NORMAL_FORM].forEach(clearIt)
 
 
     const maybeError = containsErrors(allLines) // check for syntax errors
     if (maybeError.isError)
         return improper(maybeError.value)
+    
+    ;[λ,...Object.keys(VARIABLES)].forEach(key => CheckIfWeTerminatedReductionSet.add(key))
 
     for (const name in VARIABLES) {
         const value = VARIABLES[name]
@@ -61,6 +66,9 @@ function condense(exp, i=0) {
     log('\n\nexp = ',exp)
     if (i === 20) return exp // we don't need  to go too far
     for (const key in VARIABLES) {
+        if (key === '-_8') {
+            log('gello',key)
+        }
         const value = VARIABLES[key]
         log(['key','value','exp',key,value,exp,'i =',i].join(`     `))
         if (isEquiv(value, exp)) return key
@@ -70,11 +78,9 @@ function condense(exp, i=0) {
         try {
             for(let reduced, last=' '; last !== reduced; last=reduced) {
                 reduced = NORMAL_FORM[key] || (NORMAL_FORM[key] = treadCarefully(value, false, 1000))
-                if (reduced.length !==  exp.length) 
-                    continue
 
                 if (key === '-_8') {
-                    console.log('gello',key)
+                    log('gello',key)
                 }
                 
                 if ([...reduced].some((c,i) => 'λ.()'.includes(c) && c !== exp[i])) 
@@ -220,8 +226,8 @@ function betaReduce(expr, options) {
 
     if (b == null) {
         const tokens = tokenize(a)
-
-        if (![λ, ...Object.keys(VARIABLES)].some(t => tokens.includes(t))) {
+        if (tokens.every(t => !CheckIfWeTerminatedReductionSet.has(t))) {
+        // if (![λ, ...Object.keys(VARIABLES)].some(t => tokens.includes(t))) {
             return a; // no lambdas, no variables, no possible way to reduce
         }
         if (outer_scope_awaits_lambda) {
@@ -254,8 +260,8 @@ function betaReduce(expr, options) {
         if (a[0] !== λ) { // it didn't reduce to a lambda, so we can't reduce further on this scope
             const result = gatherTerms(terms.slice(1).reduce((a,term,i) => (
                 // the ternary is there to stop the expansion when we don't need to it anymore. eg: s 1 2 stays like that
-                [...a, tokenize(term).length === 1 ? term : betaReduce(term, {
-                    outsideWrap: [leftW + gatherTerms(a), rightW + gatherTerms(terms.slice(1).slice(i+2))],
+                [...a, /* tokenize(term).length === 1 ? term : */ betaReduce(term, {
+                    outsideWrap: [leftW + gatherTerms(a), rightW + gatherTerms(terms.slice(i+3))],
                     charLimit,
                     limit
                 })]

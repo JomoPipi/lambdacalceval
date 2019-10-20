@@ -70,7 +70,7 @@ abs = snd
 invert = λ n . [(˂0 n),(abs n)] -- additive inverse
 
 
-add = λ a b . (λ A B C D . (xor C D)   ( (˃ A B) ([] C (- A B)) [] D (- B A) )   ([] C (A + B))) (abs a) (abs b) (≥0 a) (≥0 b)
+add = λ a b . (λ A B C D . (xor C D)   ( (˃ A B) ([] C (- A B)) ([] D (- B A)) )   ([] C (A + B))) (abs a) (abs b) (≥0 a) (≥0 b)
 
 -- sub = λ a b . add a ([] (˂0 b) (abs b))
 
@@ -100,7 +100,7 @@ isCommonDiv = λ a b n . and (==0 (% a n)) (==0 (% b n))
 -- natRange 2 (min a b)
 
 -- findCommonDiv returns 0 if none was found
-findCommonDiv% = λ r a b i end. == i end 0 ( isCommonDiv a b i i (r a b (+ i) end) )
+findCommonDiv% = λ r a b i end. ≥ i end 0 ( isCommonDiv a b i i (r a b (+ i) end) )
 
 findCommonDiv = λ a b . Y findCommonDiv% a b 2 (+ (min a b))
 
@@ -143,23 +143,29 @@ frac = λ n d . (λ ND. (λ N D. (icyhot n d)   ([] (neg N) D)   ([] (pos N) D) 
 
 *abs = λ a b . *(abs a)(abs b)
 
-multFracs = λ a b . (λna nb da db . frac ((icyhot na nb neg pos) (*abs na nb)) (pos (*abs da db)) ) (fst a) (fst b) (snd a) (snd b)
+mult = λ a b . icyhot a b neg pos (*abs a b)
+
+multFracs = λ a b . (λna nb da db . frac (mult na nb) (mult da db) ) (fst a) (fst b) (snd a) (snd b)
 
 divideFracs = λ a b . (λ b . multFracs a b ) (frac (snd b) (fst b))
 
--- addFracs = λ a b . 
+addFracs = λ a b . (λ na nb da db . frac (add (mult na db) (mult nb da)) (mult da db)) (fst a) (fst b) (snd a) (snd b)
 
--2/1 = frac +_2 -_1
-1/4  = frac -_1 -_4
--8/1 = frac +_8 -_1
-
-
-divideFracs -2/1 1/4
-
+2/1 = frac -_2 -_1
+-1/4 = frac -_1 +_4
+7/1  = frac +_7 +_1
+3/4  = frac +_3 +_4
+1/4  = frac +_1 +_4
 
 
+-- addFracs 3/4 (divideFracs (addFracs 2/1 -1/4) 7/1) 30 seconds to compute!
+divideFracs (addFracs 2/1 -1/4) 7/1
 
-`, '-8/1']
+
+-- todo: implement lists of ints
+
+
+`, '1/4']
 
 
 const testCase0 = { name: 'basic tests', tests: [
@@ -387,11 +393,6 @@ function failure({name, tests}) {
 
 // goal: current a thunk, that thing that delays application and lets a value be reduced first.
 
-
-
-// random code :
-
-
 // true  = λ a b . a
 // false = λ a b . b
 // if    = λ c t e.c t e
@@ -456,19 +457,22 @@ function failure({name, tests}) {
 
 // ˂0  = λ n . not (≥0 n)
 
-// -- cmpInts = λ a b .
+// -- one is below 0, other is above 0
+// icyhot = λ a b . xor (≥0 a) (≥0 b)
 
 // abs = snd
 
 // invert = λ n . [(˂0 n),(abs n)] -- additive inverse
 
 
-// add = λ a b . (λ A B C D . (xor C D)   ( (˃ A B) ([] C (- A B)) [] D (- B A) )   ([] C (A + B))) (abs a) (abs b) (≥0 a) (≥0 b)
+// add = λ a b . (λ A B C D . (xor C D) ( (˃ A B) ([] C (- A B)) [] D (- B A) ) ([] C (A + B))) (abs a) (abs b) (≥0 a) (≥0 b)
+
+// add2 = λ a b . (λ A B C D . (xor C D) ((λA-B. ==0 A-B ([] D (- B A)) ([] C A-B) ) ((λ_. - A B)_)) ([] C (A + B))) (abs a) (abs b) (≥0 a) (≥0 b)
 
 // -- sub = λ a b . add a ([] (˂0 b) (abs b))
 
 // sub = λ a b . add a (invert b)
-
+// sub2 = λ a b . add2 a (invert b)
 
 // /% = λ r a b . ˂ a b 0 (+ (r (- a b) b))
 
@@ -526,10 +530,12 @@ function failure({name, tests}) {
 // +_8 = pos 8
 // -_9 = neg 9
 // +_9 = pos 9
+// +_100 = pos (* 5 20)
+// +_40 = pos (20 + 20)
+// -_60 = neg (20 + 20 + 20)
+// +_60 = pos (20 + 20 + 20)
+// -_40 = neg (20 + 20)
 
-
-// -- one is below 0, other is above 0
-// icyhot = λ a b . xor (≥0 a) (≥0 b)
 
 // -- constructs fractions
 // frac = λ n d . (λ ND. (λ N D. (icyhot n d)   ([] (neg N) D)   ([] (pos N) D) ) (fst ND) (pos (snd ND))) (simplify (abs n) (abs d))
@@ -538,23 +544,22 @@ function failure({name, tests}) {
 
 // mult = λ a b . icyhot a b neg pos (*abs a b)
 
-// multFracs = λ a b . (λna nb da db . frac ((icyhot na nb neg pos) (*abs na nb)) (pos (*abs da db)) ) (fst a) (fst b) (snd a) (snd b)
+// multFracs = λ a b . (λna nb da db . frac (mult na nb) (mult da db) ) (fst a) (fst b) (snd a) (snd b)
 
 // divideFracs = λ a b . (λ b . multFracs a b ) (frac (snd b) (fst b))
 
-// -- addFracs = λ a b . 
+// addFracs = λ a b . (λ na nb da db . frac (add (mult na db) (mult nb da)) (mult da db)) (fst a) (fst b) (snd a) (snd b)
 
 // -2/1 = frac +_2 -_1
 // 1/4  = frac -_1 -_4
-// -8/1 = [ -_8 , +_1 ]
-// -7/1 = frac -_7 +_1
+// -8/1 = frac +_8 -_1
+// 1/2  = frac +_1 +_2
+// 2/1  = frac -_2 -_1
+// 5/2  = frac +_5 +_2
 
-// equals = λ a b . icyhot a b false (== (abs a) (abs b))
+// -- addFracs 1/4 1/4
 
-// -- divideFracs -2/1 1/4
-// -- mult +_3 +_3
+// -- add2 +_20 +_200
 
-// addFracs = λ a b . (λ na nb da db . equals da db (frac (add na nb) da) (frac (add (mult na db) (mult nb da)) (mult da db)) ) (fst a) (fst b) (snd a) (snd b)
-
-// -- addFracs -2/1 1/4 -- WRONG ANSWER, should be -7/1 but is -8/1
+// add2 -_4 +_6
 
