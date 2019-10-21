@@ -35,7 +35,7 @@ function containsErrors(allLines) {
         VARIABLES[name] = finalStep(value)
 
         if (/[λ.() ]/.test(name)) 
-            return doError('Names shouldn\'t contains any of these characers <code>"λ.() "</code>.', 0)
+            return doError('Names shouldn\'t contains any of these characers <code>"λ.() "</code>.', row)
 
         const error = anyError(value, row, col2+1)
         if (error) return error
@@ -122,7 +122,7 @@ function anyError(line, row=0, ioffset=0) {
 
 
 
-function doError(text, row, column) {
+function doError(text, row, column=0) {
     editor.selection.moveTo(row, column)
     editor.focus()
     return { isError: true, value: text + ` (line ${row+1})` }

@@ -61,16 +61,18 @@ Set_Up_Editor: {
     const options = {
       showPrintMargin: false, // hides the vertical limiting strip
       fontSize: "100%",
-      maxLines: 10000,
+      maxLines: Infinity,
       tabSize: 2
     }
     editor.setAutoScrollEditorIntoView(true);
+    // editor.container.style.overflowY = 'auto'
+    // editor.container.style.maxHeight = '55vh'
     let fromServer
     editor.getSession().on('change', function(e) {
-        const newHeight = editor.getSession().getScreenLength() * 
-        (editor.renderer.lineHeight + editor.renderer.scrollBar.getWidth());
-        editor.container.style.height = `${newHeight * 1.5}px`;
-        editor.resize();
+        // const newHeight = editor.getSession().getScreenLength() * 
+        // (editor.renderer.lineHeight + editor.renderer.scrollBar.getWidth());
+        // editor.container.style.height = `${newHeight * 1.5}px`;
+        // editor.resize();
       if (fromServer) return;
       const s = editor.getValue()
       if (e.action === 'insert' && e.lines.some(l => /[\\<>]/.test(l))) {

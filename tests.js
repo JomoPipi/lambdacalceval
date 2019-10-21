@@ -387,10 +387,9 @@ function failure({name, tests}) {
 
 
 
+// TODO: simulate a turing machine
 
-
-
-// goal: current a thunk, that thing that delays application and lets a value be reduced first.
+// id = λ x . x
 
 // true  = λ a b . a
 // false = λ a b . b
@@ -437,8 +436,10 @@ function failure({name, tests}) {
 // -1  = λ n . fst (n § ([] 0 0))
 // -   = λ a b . b -1 a
 // ==0 = λ n . n (λx.false) true
+// ˃=  = ≥
 // ≥   = λ a b . ==0 (- b a)
 // ˃   = λ a b . not (≥ b a)
+// ˂=  = ≤
 // ≤   = λ a b . ==0 (- a b)
 // ˂   = λ a b . not (≥ a b)
 // ==  = λ a b . ==0 ((- a b) + (- b a)) 
@@ -456,22 +457,21 @@ function failure({name, tests}) {
 
 // ˂0  = λ n . not (≥0 n)
 
-// -- one is below 0, other is above 0
-// icyhot = λ a b . xor (≥0 a) (≥0 b)
+// -- cmpInts = λ a b .
 
 // abs = snd
 
 // invert = λ n . [(˂0 n),(abs n)] -- additive inverse
 
 
-// add = λ a b . (λ A B C D . (xor C D) ( (˃ A B) ([] C (- A B)) [] D (- B A) ) ([] C (A + B))) (abs a) (abs b) (≥0 a) (≥0 b)
+// add = λ a b . (λ A B C D . (xor C D)   ( (˃ A B) ([] C (- A B)) ([] D (- B A)) )   ([] C (A + B))) (abs a) (abs b) (≥0 a) (≥0 b)
 
-// add2 = λ a b . (λ A B C D . (xor C D) ((λA-B. ==0 A-B ([] D (- B A)) ([] C A-B) ) ((λ_. - A B)_)) ([] C (A + B))) (abs a) (abs b) (≥0 a) (≥0 b)
+// // add2 = λ a b . (λ A B C D . (xor C D) ((λA-B. ==0 A-B ([] D (- B A)) ([] C A-B) ) ((λ_. - A B)_)) ([] C (A + B))) (abs a) (abs b) (≥0 a) (≥0 b)
 
 // -- sub = λ a b . add a ([] (˂0 b) (abs b))
 
 // sub = λ a b . add a (invert b)
-// sub2 = λ a b . add2 a (invert b)
+
 
 // /% = λ r a b . ˂ a b 0 (+ (r (- a b) b))
 
@@ -496,7 +496,7 @@ function failure({name, tests}) {
 // -- natRange 2 (min a b)
 
 // -- findCommonDiv returns 0 if none was found
-// findCommonDiv% = λ r a b i end. == i end 0 ( isCommonDiv a b i i (r a b (+ i) end) )
+// findCommonDiv% = λ r a b i end. ≥ i end 0 ( isCommonDiv a b i i (r a b (+ i) end) )
 
 // findCommonDiv = λ a b . Y findCommonDiv% a b 2 (+ (min a b))
 
@@ -509,32 +509,30 @@ function failure({name, tests}) {
 // denominator = snd
 
 
-// -_0 = neg 0 -- just incase
-// +_0 = pos 0
-// -_1 = neg 1
-// +_1 = pos 1
-// -_2 = neg 2
-// +_2 = pos 2
-// -_3 = neg 3
-// +_3 = pos 3
-// -_4 = neg 4
-// +_4 = pos 4
-// -_5 = neg 5
-// +_5 = pos 5
-// -_6 = neg 6
-// +_6 = pos 6
-// -_7 = neg 7
-// +_7 = pos 7
-// -_8 = neg 8
-// +_8 = pos 8
-// -_9 = neg 9
-// +_9 = pos 9
-// +_100 = pos (* 5 20)
-// +_40 = pos (20 + 20)
-// -_60 = neg (20 + 20 + 20)
-// +_60 = pos (20 + 20 + 20)
-// -_40 = neg (20 + 20)
+// -0' = neg 0 -- just incase
+//  0' = pos 0
+// -1' = neg 1
+//  1' = pos 1
+// -2' = neg 2
+//  2' = pos 2
+// -3' = neg 3
+//  3' = pos 3
+// -4' = neg 4
+//  4' = pos 4
+// -5' = neg 5
+//  5' = pos 5
+// -6' = neg 6
+//  6' = pos 6
+// -7' = neg 7
+//  7' = pos 7
+// -8' = neg 8
+//  8' = pos 8
+// -9' = neg 9
+//  9' = pos 9
 
+
+// -- one is below 0, other is above 0
+// icyhot = λ a b . xor (≥0 a) (≥0 b)
 
 // -- constructs fractions
 // frac = λ n d . (λ ND. (λ N D. (icyhot n d)   ([] (neg N) D)   ([] (pos N) D) ) (fst ND) (pos (snd ND))) (simplify (abs n) (abs d))
@@ -549,16 +547,47 @@ function failure({name, tests}) {
 
 // addFracs = λ a b . (λ na nb da db . frac (add (mult na db) (mult nb da)) (mult da db)) (fst a) (fst b) (snd a) (snd b)
 
-// -2/1 = frac +_2 -_1
-// 1/4  = frac -_1 -_4
-// -8/1 = frac +_8 -_1
-// 1/2  = frac +_1 +_2
-// 2/1  = frac -_2 -_1
-// 5/2  = frac +_5 +_2
+// 2/1  = frac -2' -1'
+// -1/4 = frac -1' 4'
+// 7/1  = frac 7' 1'
+// 3/4  = frac 3' 4'
+// 1/4  = frac 1' 4'
 
-// -- addFracs 1/4 1/4
+// -- versions of id that also work for numbers
+// id1 = λ a b c . a b c
+// id2 = λ a b . a b
 
-// -- add2 +_20 +_200
 
-// add2 -_4 +_6
+// -- isIdOrInteger = 
 
+// -- isId = λ maybeId . == 3 (maybeId 3)
+
+// -- isIdOrInteger =
+
+// -- addFracs 3/4 (divideFracs (addFracs 2/1 -1/4) 7/1) 30 seconds to compute!
+// -- divideFracs (addFracs 2/1 -1/4) 7/1
+
+// -- ˃ x 0 returns false for all integers x (... and lists!!!)
+// -- this fact can be used to make a function that
+// -- return false for all integers, but true for something else (like 1)
+// -- this is so we can tell we have an empty list
+// -- I guess an empty int list can be represented by any nonzero natural number?!
+
+// -- tells us if we have an empty list
+// isNull = λ x . ˃ x 0
+
+// -- because of how we define empty list, here is the empty list
+// null = 1
+
+// head = fst 
+// tail = snd
+
+// list0 = [] -2' null
+// list1 = [] 5' list0
+// -1,4,0,5,-2 = [] -1' ([] 4' ([] 0' list1))
+
+// length% = λ r lst . isNull lst 0 (+ (r (tail lst)))
+
+// length = λ lst . Y length% lst
+
+// length -1,4,0,5,-2

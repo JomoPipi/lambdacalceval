@@ -242,7 +242,7 @@ function betaReduce(expr, options) {
 
 
     if (a[0] !== λ) { // well, it needs to be a lambda in order to apply it to b
-        a = betaReduce(a, { outer_scope_awaits_lambda: true, outsideWrap: [leftW, rightW + gatherTerms(terms.slice(1)), ''], limit, charLimit })
+        a = betaReduce(a, { outer_scope_awaits_lambda: true, outsideWrap: [`${leftW}(`, `${gatherTerms(terms.slice(1))})${rightW}`, ''], limit, charLimit })
         // notice that we set outer_scope_awaits_lambda to true.
         // this means that the reductions will stop when it becomes a lambda, 
         // even if it's not yet fully reduced.
@@ -251,7 +251,11 @@ function betaReduce(expr, options) {
             const result = gatherTerms(terms.slice(1).reduce((a,term,i) => (
                 // the ternary is there to stop the expansion when we don't need to it anymore. eg: s 1 2 stays like that
                 [...a, /* tokenize(term).length === 1 ? term : */ betaReduce(term, {
-                    outsideWrap: [leftW + gatherTerms(a), rightW + gatherTerms(terms.slice(i+3))],
+                    outsideWrap: 
+                    [
+                        `${leftW}(${gatherTerms(a)}`,
+                        `${gatherTerms(terms.slice(i+3))})${rightW}`
+                    ],
                     charLimit,
                     limit
                 })]
