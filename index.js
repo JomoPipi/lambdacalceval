@@ -51,7 +51,6 @@ function completeReduction(code, optimize) {
     if (tokenize(expression).length === 1)      // you probably want it expanded, if it's a definition, in this case
         return exp                             
 
-    log('\n\n here\'es the exp!!exp = ',exp)
     return finalStep(condense(exp))
 }
 
@@ -63,14 +62,10 @@ function completeReduction(code, optimize) {
 
 
 function condense(exp, i=0) {
-    log('\n\nexp = ',exp)
     if (i === 20) return exp // we don't need  to go too far
     for (const key in VARIABLES) {
-        if (key === '-_8') {
-            log('gello',key)
-        }
+        
         const value = VARIABLES[key]
-        log(['key','value','exp',key,value,exp,'i =',i].join(`     `))
         if (isEquiv(value, exp)) return key
         if (DIVERGENT.has(key)) continue
         HISTORY.length = HISTORY.iter = 0
@@ -78,10 +73,6 @@ function condense(exp, i=0) {
         try {
             for(let reduced, last=' '; last !== reduced; last=reduced) {
                 reduced = NORMAL_FORM[key] || (NORMAL_FORM[key] = treadCarefully(value, false, 1000))
-
-                if (key === '-_8') {
-                    log('gello',key)
-                }
                 
                 if ([...reduced].some((c,i) => 'λ.()'.includes(c) && c !== exp[i])) 
                     continue
@@ -191,7 +182,6 @@ function betaReduce(expr, options) {
     HISTORY.iter++
     if (limit) {
         if (HISTORY.iter > limit || (charLimit && expr.length > charLimit)) { 
-            log(HISTORY.iter, limit, charLimit);
             throw "possible divergent expression"
         }
     }

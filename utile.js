@@ -73,8 +73,10 @@ function equivFormat(x, nf) {
 //   SLOW
 
 function isEquiv(a,b) {
-    const nf = makeNextFreeVarFunc(new Set(a+b))
-    const nf2 = makeNextFreeVarFunc(new Set(a+b))
+    const A = new Set(a), B = new Set(b), ab = a+b
+    if (A.size !== B.size) return false
+    const nf = makeNextFreeVarFunc(new Set(ab))
+    const nf2 = makeNextFreeVarFunc(new Set(ab))
     return equivFormat(a,nf) === equivFormat(b,nf2)
 }
 

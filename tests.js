@@ -113,26 +113,26 @@ numerator = fst
 denominator = snd
 
 
--_0 = neg 0 -- just incase
-+_0 = pos 0
--_1 = neg 1
-+_1 = pos 1
--_2 = neg 2
-+_2 = pos 2
--_3 = neg 3
-+_3 = pos 3
--_4 = neg 4
-+_4 = pos 4
--_5 = neg 5
-+_5 = pos 5
--_6 = neg 6
-+_6 = pos 6
--_7 = neg 7
-+_7 = pos 7
--_8 = neg 8
-+_8 = pos 8
--_9 = neg 9
-+_9 = pos 9
+-0' = neg 0 -- just incase
+ 0' = pos 0
+-1' = neg 1
+ 1' = pos 1
+-2' = neg 2
+ 2' = pos 2
+-3' = neg 3
+ 3' = pos 3
+-4' = neg 4
+ 4' = pos 4
+-5' = neg 5
+ 5' = pos 5
+-6' = neg 6
+ 6' = pos 6
+-7' = neg 7
+ 7' = pos 7
+-8' = neg 8
+ 8' = pos 8
+-9' = neg 9
+ 9' = pos 9
 
 
 -- one is below 0, other is above 0
@@ -151,18 +151,17 @@ divideFracs = λ a b . (λ b . multFracs a b ) (frac (snd b) (fst b))
 
 addFracs = λ a b . (λ na nb da db . frac (add (mult na db) (mult nb da)) (mult da db)) (fst a) (fst b) (snd a) (snd b)
 
-2/1 = frac -_2 -_1
--1/4 = frac -_1 +_4
-7/1  = frac +_7 +_1
-3/4  = frac +_3 +_4
-1/4  = frac +_1 +_4
+2/1 = frac -2' -1'
+-1/4 = frac -1' 4'
+7/1  = frac 7' 1'
+3/4  = frac 3' 4'
+1/4  = frac 1' 4'
 
 
 -- addFracs 3/4 (divideFracs (addFracs 2/1 -1/4) 7/1) 30 seconds to compute!
 divideFracs (addFracs 2/1 -1/4) 7/1
 
 
--- todo: implement lists of ints
 
 
 `, '1/4']
