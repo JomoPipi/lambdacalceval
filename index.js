@@ -63,7 +63,7 @@ function completeReduction(code, optimize) {
 
 function condense(exp, i=0) {
     if (i === 20) return exp // we don't need  to go too far
-    for (const key in VARIABLES) {
+    for (const key of Object.keys(VARIABLES).sort()) {
         
         const value = VARIABLES[key]
         if (isEquiv(value, exp)) return key

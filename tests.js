@@ -457,21 +457,13 @@ function failure({name, tests}) {
 
 // ˂0  = λ n . not (≥0 n)
 
-// -- cmpInts = λ a b .
-
 // abs = snd
 
 // invert = λ n . [(˂0 n),(abs n)] -- additive inverse
 
-
 // add = λ a b . (λ A B C D . (xor C D)   ( (˃ A B) ([] C (- A B)) ([] D (- B A)) )   ([] C (A + B))) (abs a) (abs b) (≥0 a) (≥0 b)
 
-// // add2 = λ a b . (λ A B C D . (xor C D) ((λA-B. ==0 A-B ([] D (- B A)) ([] C A-B) ) ((λ_. - A B)_)) ([] C (A + B))) (abs a) (abs b) (≥0 a) (≥0 b)
-
-// -- sub = λ a b . add a ([] (˂0 b) (abs b))
-
 // sub = λ a b . add a (invert b)
-
 
 // /% = λ r a b . ˂ a b 0 (+ (r (- a b) b))
 
@@ -487,8 +479,6 @@ function failure({name, tests}) {
 // -- 6. Define the rational numbers as pairs of integers.
 // -- 7. Define functions for the addition, subtraction, multiplication and division of
 // -- rationals
-
-
 
 // -- are a and b both divisible by n?
 // isCommonDiv = λ a b n . and (==0 (% a n)) (==0 (% b n))
@@ -530,7 +520,6 @@ function failure({name, tests}) {
 // -9' = neg 9
 //  9' = pos 9
 
-
 // -- one is below 0, other is above 0
 // icyhot = λ a b . xor (≥0 a) (≥0 b)
 
@@ -556,7 +545,6 @@ function failure({name, tests}) {
 // -- versions of id that also work for numbers
 // id1 = λ a b c . a b c
 // id2 = λ a b . a b
-
 
 // -- isIdOrInteger = 
 
@@ -589,5 +577,85 @@ function failure({name, tests}) {
 // length% = λ r lst . isNull lst 0 (+ (r (tail lst)))
 
 // length = λ lst . Y length% lst
+// -- length -1,4,0,5,-2 -- 5
 
-// length -1,4,0,5,-2
+
+// -- smallFuckInterpreter :: [Nat] -˃ [Bool] -˃ Int -˃ [Bool]
+// -- SFI% = λ r code tape ptr . or (isNull code) (or (˂0 ptr) (== (abs ptr) (length tape))) tape
+// --   ( 
+// --     ( λ v f p .
+// --       r   (tail code)   ((f '*') (newTapeWithBitFlipped tape ptr) tape)
+// --       (
+// --         (f '˃') (add ptr 1') (
+// --           (f '˂') (sub ptr 1') (
+// --             (f '[') ((==0 v) (pos(jumpPast] tape p)) (add ptr 1')) (
+// --               (f ']') ((˃ 0 v) (pos(jumpBackTo[ tape p)) (add ptr 1'))
+// --                 ptr
+// --             )
+// --           )
+// --         )
+// --       )
+// --     )
+// --     (elemAt (abs ptr) tape) (λ x . == x (head code)) (abs ptr)
+// --   )
+  
+  
+// jp]% = λ r tape n x . or (isNull tape) (==0 x) n  ((λf.(   r (tail tape) (+ n) ((f ']') (- x 1) ((f '[') (+ x) x))   ) ) (λx. == x (head tape)))
+
+// -- jumpPast] :: [Nat] -˃ Nat -˃ Nat
+// jumpPast] = λ tape n . Y jp]% (drop (+ n) tape) (+ n) 1
+
+
+
+
+// drop = λ n list . n snd list
+
+// -- Smallfuck terminates when any of the two conditions mentioned below become true:
+  
+//     -- All commands have been considered from left to right
+//     -- The pointer goes out-of-bounds (pointer ˂ 0 or pointer ˃= tape.length)
+  
+// '˃' = 1 -- move ptr to the right
+// '˂' = 2 -- move pts to the left
+// '*' = 3 -- flip the bit we're pointing to
+// '[' = 4 -- Jump past matching ] if current bit is false
+// ']' = 5 -- Jump back to matching [ if current bit is true
+
+// reverse% = λ r list result . isNull list result (r (tail list) ([] (head list) result))
+
+// reverse = λ list . Y reverse% list null
+
+// NTWBF% = λ r tape x result . isNull tape result (r (tail tape) (sub x 1') ([] (==0 (abs x) (not (head tape)) (head tape)) result) )
+
+// -- newTapeWithBitFlipped :: [Bool] -˃ Int -˃ [Bool]
+// newTapeWithBitFlipped = λ tape x . reverse ( Y NTWBF% tape x null )
+
+// tttt = [] true ([] true ( [] true ( [] true null ) ))
+// fttt = [] false ([] true ( [] true ( [] true null ) ))
+// tftt = [] true ([] false ( [] true ( [] true null ) ))
+// ttft = [] true ([] true ( [] false( [] true null ) ))
+// tfft = [] true ([] false( [] false ( [] true null ) ))
+// fx4  = [] false ([] false ( [] false ( [] false null ) ))
+// fftf = [] false ([] false ( [] true ( [] false null ) ))
+// -- newTapeWithBitFlipped fx4 2'
+
+// #abcde =  [] A ( [] B ( [] C ([] D ([] E null))))
+
+// #cde =  [] D ([] E null)
+
+
+// elemAt = λ n list . head (drop n list)
+// -- elemAt 4 #abcde
+
+// [123][[]] = [] '[' ( [] 1 ( [] 2 ( [] 3 ( [] ']' ( [] '[' ( [] '[' ( [] ']' ( [] ']' null ) )))))))
+
+// -- 01234567
+
+// jumpPast] [123][[]] 6 -- should be 8
+// -- elemAt 3 #abcde
+// -- drop 3 #abcde
+
+// -- smallFuckInterpreter :: [Nat] -˃ [Bool] -˃ [Bool]
+// -- smallFuckInterpreter = λ   code     tape   .  Y SFI% code tape 0'
+
+
