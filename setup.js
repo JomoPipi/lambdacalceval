@@ -98,14 +98,22 @@ Set_Up_Editor: {
       }
     })
     editor.getSession().setValue(`
-0 = λa b.b
-1 = λa b.a b
-2 = λa b.a(a b)
-+ = λ w y x . y (w y x)
 
--- Following the last variable assignment should be the expression to be evaluated:
+true  = λ a b . a
+false = λ a b . b
 
-    + 1
+
+-- Declarations may span multiple lines, as long as you indent after the first line.
+and = λ x y .
+  x 
+    (y true false)
+    false
+-- the same assignment in one line: and = λx y.x(y true false)false
+
+
+-- Following the last variable assignment (if any) should be the expression to be evaluated:
+and true true
+    
 `)
     D('code').style.borderRadius = '10px'
     editor.setOptions(options);

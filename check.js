@@ -14,11 +14,37 @@ function containsErrors(allLines) {
     */
 
     const lastLineWithEqualSign = allLines.reduce((a,v,i) => v.includes(' = ') ? i : a, -1)
+    const expLine = allLines.findIndex((line,i) => i > lastLineWithEqualSign && line.length && !/^\s/.test(line))
+    let expression = ''
+    if (expLine < 0) return doError('missing main expression')
+    for (let row = 0, currentVar; row < allLines.length; row++) {
 
-    for (let row = 0; row <= lastLineWithEqualSign; row++) {
-        const line = allLines[row].trim()
+        const ln = allLines[row]
+        const startsWithWS = /^\s/.test(ln)
+        const line = ln.trim()
         if (!line) continue
         const col  = line.indexOf(' = ')
+        const decl = col >= 0
+        
+        if (row >= expLine) {
+            if (row > expLine && !startsWithWS) 
+                return doError('indentation expected', row)
+
+            if (decl) 
+                return doError('main expression cannot contain " = "', row)
+
+            expression += ' ' + line
+            continue
+        }
+
+        if (startsWithWS) {
+            if (decl || !currentVar)
+                return doError('Illegal indentation', row)
+
+            VARIABLES[currentVar] += ' ' + line
+            continue
+        }
+
         const col2 = line.lastIndexOf(' = ')
 
         if (col < 0)
@@ -32,30 +58,28 @@ function containsErrors(allLines) {
         if (VARIABLES[name])
             return doError(`${name} has already been declared.`, row)
 
-        VARIABLES[name] = finalStep(value)
+        VARIABLES[name] = value
+        currentVar = name
 
         if (/[λ.() ]/.test(name)) 
             return doError('Names shouldn\'t contains any of these characers <code>"λ.() "</code>.', row)
-
-        const error = anyError(value, row, col2+1)
-        if (error) return error
     }
+    for (const name in VARIABLES) {
+        const value = finalStep(VARIABLES[name])
+        const error = anyError(value, allLines.findIndex(row => row.trim().startsWith(name)))
+        if (error) {
+            log(name,VARIABLES[name])
+            return error
+        }
+    }
+
     
-    const expression = allLines.slice(lastLineWithEqualSign+1)
-        .map(s=>s.trim())
-        .filter(s=>s).join` `
-        .trim()
-        
-    if (expression.includes(' = ')) 
-        return doError('main expression cannot contain " = "')
-
     if (!expression) 
-        return doError('Error: Missing main expression', lastLineWithEqualSign+1, null)
+        return doError('Error: Missing main expression', expLine, null)
 
-    const rowIndex  = allLines.findIndex( (row,r) => r > lastLineWithEqualSign && row.trim().length && expression.startsWith(row.trim()))
     const error = anyError(expression,
-        rowIndex,  // row
-        [...allLines[rowIndex]].findIndex(c => c != ' ')) // column offset
+        expLine,
+        [...allLines[expLine]].findIndex(c => c != ' ')) // column offset
 
     if (error) return error
 

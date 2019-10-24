@@ -19,6 +19,8 @@ function matchedParenthesis(exp) {
 
 function alphaEquivalent(a,b) {
 
+    log('now testing for equivalence: '+a+'   and   '+b)
+
     if (a.length !== b.length) 
         return alert('the lengths are not equal')
 
