@@ -390,6 +390,7 @@ function failure({name, tests}) {
 
 // TODO: simulate a turing machine
 
+/*
 
 
 
@@ -426,12 +427,6 @@ function failure({name, tests}) {
 
 
 
-// id    = λ x . x
-// Y     = λ y . (λx.y(x x)) (λx.y(x x))
-// §     = λ p.[](snd p)(+(snd p))
-// []    = λ a b s . s a b
-// fst   = λ p . p true
-// snd   = λ p . p false
 
 
 
@@ -440,14 +435,6 @@ function failure({name, tests}) {
 
 
 
-// -- Bool
-// true  = λ a b . a
-// false = λ a b . b
-// if    = λ c t e.c t e
-// and   = λ a b . a (b true 0) 0
-// not   = λ b . b false true
-// or    = λ a b . a true (b true 0)
-// xor   = λ a b . a (b false true) (b true false)
 
 
 
@@ -456,49 +443,6 @@ function failure({name, tests}) {
 
 
 
-// -- Nat
-// 0 = λ a b . b
-// 1 = + 0
-// 2 = + 1
-// 3 = + 2
-// 4 = + 3
-// 5 = + 4
-// 6 = + 5
-// 7 = + 6
-// 8 = + 7
-// 9 = + 8
-// 10 = + 9
-// 11 = + 10
-// 12 = + 11
-// 13 = + 12
-// 14 = + 13
-// 15 = + 14
-// 16 = + 15
-// 17 = + 16
-// 18 = + 17
-// 19 = + 18
-// 20 = + 19
-// min = λ a b . ˂ a b a b
-// max = λ a b . ˃ a b a b
-// +   = λ w y x . y ( w y x )
-// *   = λ a b f . a (b f)
-// -1  = λ n . fst (n § ([] 0 0))
-// -   = λ a b . b -1 a
-// ==0 = λ n . n (λx.false) true
-// ˃=  = ≥
-// ≥   = λ a b . ==0 (- b a)
-// ˃   = λ a b . not (≥ b a)
-// ˂=  = ≤
-// ≤   = λ a b . ==0 (- a b)
-// ˂   = λ a b . not (≥ a b)
-// ==  = λ a b . ==0 ((- a b) + (- b a))
-// cmp = λ a b . (˂ a b) 1 ((˃ a b) 3 2) -- 1: less, 2: equal, 3: greater
-// /% = λ r a b . ˂ a b 0 (+ (r (- a b) b))
-// %% = λ r a b . ˂ a b a (r (- a b) b)
-// / = λ a b . Y /% a b
-// % = λ a b . Y %% a b
-// factorial% = λ r n . ==0 n 1 ( * n (r (-1 n)))
-// factorial = λ n . Y factorial% n
 
 
 
@@ -507,46 +451,157 @@ function failure({name, tests}) {
 
 
 
-// -- Int
-// 0'  = pos 0
-// 1'  = pos 1
-// 2'  = pos 2
-// 3'  = pos 3
-// 4'  = pos 4
-// 5'  = pos 5
-// 6'  = pos 6
-// 7'  = pos 7
-// 8'  = pos 8
-// 9'  = pos 9
-// -0' = neg 0
-// -1' = neg 1
-// -2' = neg 2
-// -3' = neg 3
-// -4' = neg 4
-// -5' = neg 5
-// -6' = neg 6
-// -7' = neg 7
-// -8' = neg 8
-// -9' = neg 9
-// pos = λ n . [] true n  -- construct positive
-// neg = λ n . [] false n -- construct negative
-// ≥0  = fst
-// ˂0  = λ n . not (≥0 n)
-// abs = snd
 
-// add = λ a b . (λ A B C D .
-//     if (xor C D)   
-//       (if (˃ A B) 
-//         ([] C (- A B)) 
-//         ([] D (- B A)))
-//       ([] C (A + B))
-//   ) (abs a) (abs b) (≥0 a) (≥0 b)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+id    = λ x . x
+Y     = λ y . (λx.y(x x)) (λx.y(x x))
+§     = λ p.[](snd p)(+(snd p))
+[]    = λ a b s . s a b
+fst   = λ p . p true
+snd   = λ p . p false
+
+
+
+
+
+
+
+
+-- Bool
+true  = λ a b . a
+false = λ a b . b
+if    = λ c t e.c t e
+and   = λ a b . a (b true 0) 0
+not   = λ b . b false true
+or    = λ a b . a true (b true 0)
+xor   = λ a b . a (b false true) (b true false)
+
+
+
+
+
+
+
+
+-- Nat
+0 = λ a b . b
+1 = + 0
+2 = + 1
+3 = + 2
+4 = + 3
+5 = + 4
+6 = + 5
+7 = + 6
+8 = + 7
+9 = + 8
+10 = + 9
+11 = + 10
+12 = + 11
+13 = + 12
+14 = + 13
+15 = + 14
+16 = + 15
+17 = + 16
+18 = + 17
+19 = + 18
+20 = + 19
+min = λ a b . ˂ a b a b
+max = λ a b . ˃ a b a b
++   = λ w y x . y ( w y x )
+*   = λ a b f . a (b f)
+-1  = λ n . fst (n § ([] 0 0))
+-   = λ a b . b -1 a
+==0 = λ n . n (λx.false) true
+˃=  = ≥
+≥   = λ a b . ==0 (- b a)
+˃   = λ a b . not (≥ b a)
+˂=  = ≤
+≤   = λ a b . ==0 (- a b)
+˂   = λ a b . not (≥ a b)
+==  = λ a b . ==0 ((- a b) + (- b a))
+cmp = λ a b . (˂ a b) 1 ((˃ a b) 3 2) -- 1: less, 2: equal, 3: greater
+/% = λ r a b . ˂ a b 0 (+ (r (- a b) b))
+%% = λ r a b . ˂ a b a (r (- a b) b)
+/ = λ a b . Y /% a b
+% = λ a b . Y %% a b
+factorial% = λ r n . ==0 n 1 ( * n (r (-1 n)))
+factorial = λ n . Y factorial% n
+
+
+
+
+
+
+
+
+-- Int
+0'  = pos 0
+1'  = pos 1
+2'  = pos 2
+3'  = pos 3
+4'  = pos 4
+5'  = pos 5
+6'  = pos 6
+7'  = pos 7
+8'  = pos 8
+9'  = pos 9
+-0' = neg 0
+-1' = neg 1
+-2' = neg 2
+-3' = neg 3
+-4' = neg 4
+-5' = neg 5
+-6' = neg 6
+-7' = neg 7
+-8' = neg 8
+-9' = neg 9
+pos = λ n . [] true n  -- construct positive
+neg = λ n . [] false n -- construct negative
+≥0  = fst
+˂0  = λ n . not (≥0 n)
+abs = snd
+
+add = λ a b . (λ A B C D .
+    if (xor C D)   
+      (if (˃ A B) 
+        ([] C (- A B)) 
+        ([] D (- B A)))
+      ([] C (A + B))
+  ) (abs a) (abs b) (≥0 a) (≥0 b)
   
-// sub = λ a b . add a (invert b)
-// *abs = λ a b . *(abs a)(abs b)
-// mult = λ a b . icyhot a b neg pos (*abs a b)
-// invert = λ n . [] (˂0 n) (abs n) -- additive inverse
-// icyhot = λ a b . xor (≥0 a) (≥0 b) -- one is below 0, other is above 0
+sub = λ a b . add a (invert b)
+*abs = λ a b . *(abs a)(abs b)
+mult = λ a b . icyhot a b neg pos (*abs a b)
+invert = λ n . [] (˂0 n) (abs n) -- additive inverse
+icyhot = λ a b . xor (≥0 a) (≥0 b) -- one is below 0, other is above 0
 
 
 
@@ -555,15 +610,15 @@ function failure({name, tests}) {
 
 
 
-// -- 6. Define the rational numbers as pairs of integers.
-// -- 7. Define functions for the addition, subtraction, multiplication and division of rationals
-// isCommonDiv = λ a b n . and (==0 (% a n)) (==0 (% b n)) -- are a and b both divisible by n?
-// findCommonDiv% = λ r a b i end. ≥ i end 0 ( isCommonDiv a b i i (r a b (+ i) end) )
-// findCommonDiv = λ a b . Y findCommonDiv% a b 2 (+ (min a b))
-// simplify% = λ r n d . (λx. ==0 x ([] n d) (r (/ n x) (/ d x))) (findCommonDiv n d)
-// simplify = λ n d . Y simplify% n d
-// numerator = fst
-// denominator = snd
+-- 6. Define the rational numbers as pairs of integers.
+-- 7. Define functions for the addition, subtraction, multiplication and division of rationals
+isCommonDiv = λ a b n . and (==0 (% a n)) (==0 (% b n)) -- are a and b both divisible by n?
+findCommonDiv% = λ r a b i end. ≥ i end 0 ( isCommonDiv a b i i (r a b (+ i) end) )
+findCommonDiv = λ a b . Y findCommonDiv% a b 2 (+ (min a b))
+simplify% = λ r n d . (λx. ==0 x ([] n d) (r (/ n x) (/ d x))) (findCommonDiv n d)
+simplify = λ n d . Y simplify% n d
+numerator = fst
+denominator = snd
 
 
 
@@ -572,38 +627,38 @@ function failure({name, tests}) {
 
 
 
-// -- Frac
-// 2/1  = frac -2' -1'
-// -1/4 = frac -1' 4'
-// 7/1  = frac 7' 1'
-// 3/4  = frac 3' 4'
-// 1/4  = frac 1' 4'
+-- Frac
+2/1  = frac -2' -1'
+-1/4 = frac -1' 4'
+7/1  = frac 7' 1'
+3/4  = frac 3' 4'
+1/4  = frac 1' 4'
 
-// frac = λ n d . -- constructs fractions
-//   (λ ND. 
-//     (λ N D. 
-//       (icyhot n d)   -- different signs?
-//         ([] (neg N) D) -- neg N, pos D
-//         ([] (pos N) D) -- pos N, pos D
-//     ) (fst ND) (pos (snd ND)) -- N, D
-//   ) (simplify (abs n) (abs d)) -- ND
+frac = λ n d . -- constructs fractions
+  (λ ND. 
+    (λ N D. 
+      (icyhot n d)   -- different signs?
+        ([] (neg N) D) -- yes? -N/D
+        ([] (pos N) D) -- no?   N/D
+    ) (fst ND) (pos (snd ND)) -- N, D
+  ) (simplify (abs n) (abs d)) -- ND
 
-// multFracs = λ a b . (λna nb da db . 
-//   frac 
-//     (mult na nb) 
-//     (mult da db) 
-//   ) (fst a) (fst b) (snd a) (snd b)
+multFracs = λ a b . (λna nb da db . 
+  frac 
+    (mult na nb) 
+    (mult da db) 
+  ) (fst a) (fst b) (snd a) (snd b)
   
-// divideFracs = λ a b . (λ b . multFracs a b ) (frac (snd b) (fst b))
+divideFracs = λ a b . (λ b . multFracs a b ) (frac (snd b) (fst b))
 
-// addFracs = λ a b . (λ na nb da db . 
-//   frac 
-//     (add (mult na db) (mult nb da))
-//     (mult da db)
-//   ) (fst a) (fst b) (snd a) (snd b)
+addFracs = λ a b . (λ na nb da db . 
+  frac 
+    (add (mult na db) (mult nb da))
+    (mult da db)
+  ) (fst a) (fst b) (snd a) (snd b)
   
-// -- addFracs 3/4 (divideFracs (addFracs 2/1 -1/4) 7/1) 30 seconds to compute!
-// -- divideFracs (addFracs 2/1 -1/4) 7/1
+-- addFracs 3/4 (divideFracs (addFracs 2/1 -1/4) 7/1) 30 seconds to compute!
+-- divideFracs (addFracs 2/1 -1/4) 7/1
 
 
 
@@ -612,157 +667,160 @@ function failure({name, tests}) {
 
 
 
+-- List
+#e = [] E null
+#de = [] D #e
+#cde = [] C #de
+#bcde = [] B #cde
+#abcde = [] A #bcde
+#abc =   [] A ([] B ([] C null))
+#bcd =   [] B ([] C ([] D null))
 
-// -- ˃ x 0 returns false for all integers x (... and lists!!!)
-// -- this fact can be used to make a function that
-// -- return false for all integers, but true for something else (like 1)
-// -- this is so we can tell we have an empty list
-// -- I guess an empty int list can be represented by any nonzero natural number?!
+isNull = λ x . ˃ x 0
+null = 1 -- empty list
+head = fst
+tail = snd
+length% = λ r lst . isNull lst 0 (+ (r (tail lst)))
+length = λ lst . Y length% lst
+list0 = [] -2' null
+list1 = [] 5' list0
+-1,4,0,5,-2 = [] -1' ([] 4' ([] 0' list1))
+prepend = λ list elem . [] elem list
+reverse% = λ r list result . isNull list result (r (tail list) ([] (head list) result))
+reverse = λ list . Y reverse% list null
+elemAt = λ n list . head (drop n list)
+drop = λ n list . n snd list
+dropLeft = λ n list . reverse (n snd (reverse list))
+take = λ n list . dropLeft (- (length list) n) (list)
 
-// -- tells us if we have an empty list
-// isNull = λ x . ˃ x 0
 
-// -- because of how we define empty list, here is the empty list
-// null = 1
 
-// head = fst
-// tail = snd
 
-// list0 = [] -2' null
-// list1 = [] 5' list0
-// -1,4,0,5,-2 = [] -1' ([] 4' ([] 0' list1))
 
-// length% = λ r lst . isNull lst 0 (+ (r (tail lst)))
 
-// length = λ lst . Y length% lst
-// -- length -1,4,0,5,-2 -- 5
+drop 0 (drop 1 #abcde)
 
-// SFI% = λ r code idx tape ptr . or (== idx (length code)) (or (˂0 ptr) (== (abs ptr) (length tape))) tape   (    ( λ v f p .    (f '˃')   (r code (+ idx) tape (add ptr 1')) (    (f '˂')    (r code (+ idx) tape (sub ptr 1')) (   (f '*')  (r code (+ idx) (newTapeWithBitFlipped tape ptr) ptr) (  (and (f '[') (==0 v)) (r code (pos(jumpPast] code p)) tape ptr) (  (and (f ']') (˃ 0 v)) (r code (pos(jumpBackTo[ code p)) tape ptr) (      r code (+ idx) tape ptr   )))))     )     (elemAt (abs ptr) tape) (λ x . == x (head code)) (abs ptr)   ) 
-// -- SFI% = λ r code idx tape ptr . or (== idx (length code)) (or (˂0 ptr) (== (abs ptr) (length tape))) tape
-// --   (
-// --     ( λ v f p .
 
-// --       (f '˃')               (r code (+ idx) tape (add ptr 1')) (
+
+
+
+
+
+-- -- ˃ x 0 returns false for all integers x (... and lists!!!)
+-- -- this fact can be used to make a function that
+-- -- return false for all integers, but true for something else (like 1)
+-- -- this is so we can tell we have an empty list
+-- -- I guess an empty int list can be represented by any nonzero natural number?!
+
+
+
+
+-- -- length -1,4,0,5,-2 -- 5
+-- SFI% = λ r code idx tape ptr . or (== idx (length code)) (or (˂0 ptr) (== (abs ptr) (length tape))) tape   (    ( λ v f p .    (f '˃')   (r code (+ idx) tape (add ptr 1')) (    (f '˂')    (r code (+ idx) tape (sub ptr 1')) (   (f '*')  (r code (+ idx) (newTapeWithBitFlipped tape ptr) ptr) (  (and (f '[') (==0 v)) (r code (pos(jumpPast] code p)) tape ptr) (  (and (f ']') (˃ 0 v)) (r code (pos(jumpBackTo[ code p)) tape ptr) (      r code (+ idx) tape ptr   )))))     )     (elemAt (abs ptr) tape) (λ x . == x (head code)) (abs ptr)   ) 
+-- -- SFI% = λ r code idx tape ptr . or (== idx (length code)) (or (˂0 ptr) (== (abs ptr) (length tape))) tape
+-- --   (
+-- --     ( λ v f p .
+
+-- --       (f '˃')               (r code (+ idx) tape (add ptr 1')) (
       
-// --       (f '˂')               (r code (+ idx) tape (sub ptr 1')) (
+-- --       (f '˂')               (r code (+ idx) tape (sub ptr 1')) (
     
-// --       (f '*')               (r code (+ idx) (newTapeWithBitFlipped tape ptr) ptr) (
+-- --       (f '*')               (r code (+ idx) (newTapeWithBitFlipped tape ptr) ptr) (
       
-// --       (and (f '[') (==0 v)) (r code (pos(jumpPast] code p)) tape ptr) (
+-- --       (and (f '[') (==0 v)) (r code (pos(jumpPast] code p)) tape ptr) (
       
-// --       (and (f ']') (˃ 0 v)) (r code (pos(jumpBackTo[ code p)) tape ptr) (
+-- --       (and (f ']') (˃ 0 v)) (r code (pos(jumpBackTo[ code p)) tape ptr) (
       
-// --                             r code (+ idx) tape ptr
+-- --                             r code (+ idx) tape ptr
       
-// --       )))))
-// --     )
-// --     (elemAt (abs ptr) tape) (λ x . == x (head code)) (abs ptr)
-// --   )
+-- --       )))))
+-- --     )
+-- --     (elemAt (abs ptr) tape) (λ x . == x (head code)) (abs ptr)
+-- --   )
  
  
-// jp]% = λ r code n x . or (isNull code) (==0 x) n  ((λf.(   r (tail code) (+ n) ((f ']') (- x 1) ((f '[') (+ x) x))   ) ) (λx. == x (head code)))
+-- jp]% = λ r code n x . or (isNull code) (==0 x) n  ((λf.(   r (tail code) (+ n) ((f ']') (- x 1) ((f '[') (+ x) x))   ) ) (λx. == x (head code)))
 
-// -- jumpPast] :: [Nat] -˃ Nat -˃ Nat
-// jumpPast] = λ code n . Y jp]% (drop (+ n) code) (+ n) 1
-
-
-
-// jb[% = λ r code n x . or (isNull code) (==0 x) n ((λf.(   r (tail code) (+ n) ((f '[') (- x 1) ((f ']') (+ x) x))   ) ) (λx. == x (head code)))
+-- -- jumpPast] :: [Nat] -˃ Nat -˃ Nat
+-- jumpPast] = λ code n . Y jp]% (drop (+ n) code) (+ n) 1
 
 
-// -- jumpBackTo[ :: [Nat] -˃ Nat -˃ Nat
-// jumpBackTo[ = λ code n . - n (Y jb[% (reverse (take n code)) 0 1)
 
-// -- unshift = λ list elem . [] elem list
+-- jb[% = λ r code n x . or (isNull code) (==0 x) n ((λf.(   r (tail code) (+ n) ((f '[') (- x 1) ((f ']') (+ x) x))   ) ) (λx. == x (head code)))
 
-// -- Smallfuck terminates when any of the two conditions mentioned below become true:
+
+-- -- jumpBackTo[ :: [Nat] -˃ Nat -˃ Nat
+-- jumpBackTo[ = λ code n . - n (Y jb[% (reverse (take n code)) 0 1)
+
+-- -- Smallfuck terminates when any of the two conditions mentioned below become true:
  
-//     -- All commands have been considered from left to right
-//     -- The pointer goes out-of-bounds (pointer ˂ 0 or pointer ˃= tape.length)
+--     -- All commands have been considered from left to right
+--     -- The pointer goes out-of-bounds (pointer ˂ 0 or pointer ˃= tape.length)
  
-// '˃' = 1 -- move ptr to the right
-// '˂' = 2 -- move pts to the left
-// '*' = 3 -- flip the bit we're pointing to
-// '[' = 4 -- Jump past matching ] if current bit is false
-// ']' = 5 -- Jump back to matching [ if current bit is true
-
-// reverse% = λ r list result . isNull list result (r (tail list) ([] (head list) result))
-
-// reverse = λ list . Y reverse% list null
-
-// NTWBF% = λ r tape x result . isNull tape result (r (tail tape) (sub x 1') ([] (==0 (abs x) (not (head tape)) (head tape)) result) )
-
-// -- newTapeWithBitFlipped :: [Bool] -˃ Int -˃ [Bool]
-// newTapeWithBitFlipped = λ tape x . reverse ( Y NTWBF% tape x null )
-
-// tttt = [] true ([] true ( [] true ( [] true null ) ))
-// fttt = [] false ([] true ( [] true ( [] true null ) ))
-// tftt = [] true ([] false ( [] true ( [] true null ) ))
-// ttft = [] true ([] true ( [] false( [] true null ) ))
-// tfft = [] true ([] false( [] false ( [] true null ) ))
-// fx4  = [] false ([] false ( [] false ( [] false null ) ))
-// fftf = [] false ([] false ( [] true ( [] false null ) ))
-// -- newTapeWithBitFlipped fx4 2'
-
-// #abcde =  [] A ( [] B ( [] C ([] D ([] E null))))
-
-// #cde =  [] C ([] D ([] E null))
-
-// #bcd =  [] B ([] C ([] D null))
-
-// #abc =  [] A ([] B ([] C null))
+-- '˃' = 1 -- move ptr to the right
+-- '˂' = 2 -- move pts to the left
+-- '*' = 3 -- flip the bit we're pointing to
+-- '[' = 4 -- Jump past matching ] if current bit is false
+-- ']' = 5 -- Jump back to matching [ if current bit is true
 
 
-// elemAt = λ n list . head (drop n list)
-// -- elemAt 4 #abcde
+-- NTWBF% = λ r tape x result . isNull tape result (r (tail tape) (sub x 1') ([] (==0 (abs x) (not (head tape)) (head tape)) result) )
 
-// [123][[]] = [] '[' ( [] 1 ( [] 2 ( [] 3 ( [] ']' ( [] '[' ( [] '[' ( [] ']' ( [] ']' null ) )))))))
+-- -- newTapeWithBitFlipped :: [Bool] -˃ Int -˃ [Bool]
+-- newTapeWithBitFlipped = λ tape x . reverse ( Y NTWBF% tape x null )
 
-
-// [123] = [] '[' ( [] 1 ( [] 2 ( [] 3 ( [] ']' null ) )))
-
-// [1 = [] '[' ( [] 1 null )
-
-// -- 01234567
-
-// -- take% = λ r n list result . ==0 n result (r (-1 n) (tail list) ([] (head list) result))
-
-// -- take = λ n list . Y take% n list null
-
-// drop = λ n list . n snd list
-
-// dropLeft = λ n list . reverse (n snd (reverse list))
-
-
-// take = λ n list . dropLeft (- (length list) n) (list)
-
-// T = true
-// F = false
-
-// -- jumpBackTo[ [123][[]] 4 -- should be 8
-// -- elemAt 3 #abcde
-// -- drop 3 #abcde
-
-// -- smallFuckInterpreter :: [Nat] -˃ [Bool] -˃ [Bool]
-// smallFuckInterpreter = λ   code     tape   .  Y SFI% code 0 tape 0'
-// SFI = smallFuckInterpreter 
-
-// '* = [] '*' null
-
-// '˃˂* = [] '˃' ([] '˂' ([] '*' null))
-
-// FTFT = [] F ([] T ([] F ([] T null)))
-
-// FFFT = [] F ([] F ([] F ([] T null)))
-
-// TTFT = [] T ([] T ([] F ([] T null)))
-
-// FFTT = [] F ([] F ([] T ([] T null)))
-
-// -- SFI '* FTFT
-// take 3 (drop 1 #abcde)
-// -- add 5' 4'
+-- tttt = [] true ([] true ( [] true ( [] true null ) ))
+-- fttt = [] false ([] true ( [] true ( [] true null ) ))
+-- tftt = [] true ([] false ( [] true ( [] true null ) ))
+-- ttft = [] true ([] true ( [] false( [] true null ) ))
+-- tfft = [] true ([] false( [] false ( [] true null ) ))
+-- fx4  = [] false ([] false ( [] false ( [] false null ) ))
+-- fftf = [] false ([] false ( [] true ( [] false null ) ))
+-- -- newTapeWithBitFlipped fx4 2'
 
 
 
+-- -- elemAt 4 #abcde
 
+-- [123][[]] = [] '[' ( [] 1 ( [] 2 ( [] 3 ( [] ']' ( [] '[' ( [] '[' ( [] ']' ( [] ']' null ) )))))))
+
+
+-- [123] = [] '[' ( [] 1 ( [] 2 ( [] 3 ( [] ']' null ) )))
+
+-- [1 = [] '[' ( [] 1 null )
+
+-- -- 01234567
+
+-- -- take% = λ r n list result . ==0 n result (r (-1 n) (tail list) ([] (head list) result))
+
+-- -- take = λ n list . Y take% n list null
+
+
+-- T = true
+-- F = false
+
+-- -- jumpBackTo[ [123][[]] 4 -- should be 8
+-- -- elemAt 3 #abcde
+-- -- drop 3 #abcde
+
+-- -- smallFuckInterpreter :: [Nat] -˃ [Bool] -˃ [Bool]
+-- smallFuckInterpreter = λ   code     tape   .  Y SFI% code 0 tape 0'
+-- SFI = smallFuckInterpreter 
+
+-- '* = [] '*' null
+
+-- '˃˂* = [] '˃' ([] '˂' ([] '*' null))
+
+-- FTFT = [] F ([] T ([] F ([] T null)))
+
+-- FFFT = [] F ([] F ([] F ([] T null)))
+
+-- TTFT = [] T ([] T ([] F ([] T null)))
+
+-- FFTT = [] F ([] F ([] T ([] T null)))
+
+-- -- SFI '* FTFT
+-- take 3 (drop 1 #abcde)
+-- -- add 5' 4'
+
+*/

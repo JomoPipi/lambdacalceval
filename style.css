@@ -4,7 +4,7 @@ html {
 }
 body { 
     margin: 2%;
-    background-color: #272727;
+    background-color:  #272727;
 }
 code { 
     font-weight: bold; 
@@ -16,7 +16,11 @@ code {
     overflow-y: auto;
 }
 #code-container {
-    height: 100%;
+    overflow-y:auto;
+    height:65vh;
+    top:15px;
+    box-shadow:2px 3px 10px rgb(18, 22, 24);
+    border-radius: 10px;
 }
 .maintext {
     color:#eee;
@@ -56,10 +60,14 @@ code {
     background-color: #fff;
 }
 .mybtn {
+    cursor: pointer;
+    border-radius: 9px;
     background: #555;
     color:#bbb;
     border-radius: 10px;
     font-size: 15px;
+    float:left;
+    margin-right: 5px;
 }
 .mybtn:focus { outline: none; }
 .mybtndark {
@@ -73,6 +81,14 @@ code {
     font-size: 1.25em;
 }
 #run-options {
+    text-align: left;
+    border-radius: 10px;
+    border: 1px solid white;
+    margin-bottom: 1%;
+    display: none;
+    height: 100px;
+}
+#resources {
     text-align: left;
     border-radius: 10px;
     border: 1px solid white;

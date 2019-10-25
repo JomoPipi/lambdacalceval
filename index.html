@@ -8,13 +8,21 @@
     <link rel="stylesheet" href="style.css">
     <script src="ace.js"></script>
 </head>
-<body class="bodyclass">
-    <button onclick="toggleTheme()" id="toggle-theme" class="mybtn" style="cursor: pointer;border-radius: 9px;"> theme </button>
-    
-    <button onclick=" const s = D('run-options').style
-    s.display = s.display === '' ? 'block' : ''
-    " id="run-options-btn" class="mybtn" 
-    style="cursor: pointer;border-radius: 9px;"> run options </button>
+<body>
+    <div style="position: absolute;">
+        <button onclick="toggleTheme()" id="toggle-theme" class="mybtn"
+        > theme </button>
+        
+        <button onclick=" const s = D('run-options').style
+        s.display = s.display === '' ? 'block' : ''
+        " id="run-options-btn" class="mybtn"
+        > run options </button>
+
+        <button onclick=" const s = D('resources').style
+        s.display = s.display === '' ? 'block' : ''
+        " id="resources-btn" class="mybtn"
+        > resources </button>
+    </div>
     
     <center>
 
@@ -33,6 +41,18 @@
             <input type="checkbox" id="togglenumbers" checked="true" onchange="toggleNumbers(0)"> show line numbers (ctrl + Q)
             
         </div>
+        
+        <div id="resources" class="maintext" >
+            <br>
+            <div style="clear:both; line-height: 50px;">
+                Learn λ calculus: &nbsp; &nbsp;
+                <a href="https://www.inf.fu-berlin.de/lehre/WS03/alpi/lambda.pdf"> lambda pdf 1 </a> &nbsp;
+                <a href="http://www.cse.chalmers.se/research/group/logic/TypesSS05/Extra/geuvers.pdf"> lambda pdf 2 </a> &nbsp;
+                <a href="https://www.youtube.com/watch?v=peOk3W7KZ4o"> 12 min youtube video </a> &nbsp;
+                <a href="https://www.youtube.com/watch?v=MAB11qXZnuU"> 1 hr and 12 min youtube video </a>
+            </div>
+        </div>
+
         <div id="code-container">
             <div id="code" cols="50" rows="5" spellcheck="false"></div>
             <div id="code-ghost" style="height:0;"></div>
@@ -48,19 +68,10 @@
 
         </div>
 
-        <button style="width: 100%;margin-top: 2%;" 
+        <button style="width: 100%;margin-top: 2%; display: block;" 
         class="mybtn" id="showsteps">see reduction steps and statistics</button>
         <div id="steps" class="output-steps"></div>
 
-        <div>
-            <div style="clear:both; line-height: 50px;">
-                Learn λ calculus: &nbsp; &nbsp;
-                <a href="https://www.inf.fu-berlin.de/lehre/WS03/alpi/lambda.pdf"> lambda pdf 1 </a> &nbsp;
-                <a href="http://www.cse.chalmers.se/research/group/logic/TypesSS05/Extra/geuvers.pdf"> lambda pdf 2 </a> &nbsp;
-                <a href="https://www.youtube.com/watch?v=peOk3W7KZ4o"> 12 min youtube video </a> &nbsp;
-                <a href="https://www.youtube.com/watch?v=MAB11qXZnuU"> 1 hr and 12 min youtube video </a>
-            </div>
-        </div>
     </center>
     <script src="setup.js"></script>
     <script src="utile.js"></script>

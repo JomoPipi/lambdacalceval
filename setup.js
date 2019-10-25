@@ -115,7 +115,7 @@ and = λ x y .
 and true true
     
 `)
-    D('code').style.borderRadius = '10px'
+    // D('code').style.borderRadius = '10px'
     editor.setOptions(options);
     editor.setTheme("ace/theme/gruvbox");
     editor.getSession().setMode("ace/mode/cobol"); // actually it's the lamdba mode!!
@@ -156,7 +156,7 @@ function toggleTheme() {
   D('output').classList.toggle('lt-output')
   document.body.classList.toggle('light-body')
   editor.setTheme( lightTheme ? "ace/theme/chrome" : "ace/theme/gruvbox");
-  D('toggle-theme').classList.toggle('mybtndark')
-  D('showsteps').classList.toggle('mybtndark')
+  for (const elem of document.getElementsByClassName('mybtn'))
+    elem.classList.toggle('mybtndark')
   D('steps').classList.toggle('lt-steps')
 }
