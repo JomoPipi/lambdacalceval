@@ -1,17 +1,40 @@
 
+::-webkit-scrollbar {
+    width: 12px;
+}
+::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); 
+    box-shadow: inset 0 0 6px rgba(0,0,0,0.3); 
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+    -webkit-border-radius: 10px;
+    border-radius: 5px;
+    background: rgba(4, 73, 57, 0.3); 
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); 
+    box-shadow: inset 0 0 6px rgba(0,0,0,0.5); 
+}
+::-webkit-scrollbar-thumb:window-inactive {
+	background: rgba(4, 73, 57, 0.1); 
+}
+
 html {
     scroll-behavior: smooth;
+}
+a:link{
+    color: rgb(0, 133, 126)
 }
 body { 
     margin: 2%;
     background-color:  #272727;
+    color:#eee;
 }
 code { 
     font-weight: bold; 
 } 
 #code {
     width:100%;
-    /* min-height:100px; */
     height: 100%;
     overflow-y: auto;
 }
@@ -21,9 +44,6 @@ code {
     top:15px;
     box-shadow:2px 3px 10px rgb(18, 22, 24);
     border-radius: 10px;
-}
-.maintext {
-    color:#eee;
 }
 .light-theme {
     color:#222;
@@ -45,8 +65,7 @@ code {
     display: block;
     font-size:10px;
     max-height: 0;
-    overflow: auto; 
-    transition: max-height 1s ease-out;
+    overflow: auto;
 }
 .lt-output {
     color:#222;
@@ -62,14 +81,14 @@ code {
 .mybtn {
     cursor: pointer;
     border-radius: 9px;
-    background: #555;
+    background: #333;
     color:#bbb;
     border-radius: 10px;
     font-size: 15px;
     float:left;
     margin-right: 5px;
 }
-.mybtn:focus { outline: none; }
+.mybtn:focus, #run-btn:focus { outline: none; }
 .mybtndark {
     background: #eee;
     color:#333;
@@ -79,6 +98,9 @@ code {
     border-top-right-radius: 10px; border-bottom-right-radius: 10px;
     color:white;background-color: rgb(4, 73, 57);
     font-size: 1.25em;
+}
+#run-btn:active {
+    background-color: rgba(4, 73, 21, 0.6);
 }
 #run-options {
     text-align: left;

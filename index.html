@@ -10,13 +10,10 @@
 </head>
 <body>
     <div style="position: absolute;">
-        <button onclick="toggleTheme()" id="toggle-theme" class="mybtn"
-        > theme </button>
-        
         <button onclick=" const s = D('run-options').style
         s.display = s.display === '' ? 'block' : ''
         " id="run-options-btn" class="mybtn"
-        > run options </button>
+        > options </button>
 
         <button onclick=" const s = D('resources').style
         s.display = s.display === '' ? 'block' : ''
@@ -33,6 +30,9 @@
 
         
         <div id="run-options" class="maintext" >
+            <button onclick="toggleTheme()" id="toggle-theme" class="mybtn"
+            > theme</button> (ctrl + i) 
+            <br>
             <br>
             <input type="checkbox" id="optimize">
             maximum overdrive (when checked: makes code run faster, but turns off reduction steps)
@@ -41,7 +41,7 @@
             <input type="checkbox" id="togglenumbers" checked="true" onchange="toggleNumbers(0)"> show line numbers (ctrl + Q)
             
         </div>
-        
+
         <div id="resources" class="maintext" >
             <br>
             <div style="clear:both; line-height: 50px;">
@@ -55,7 +55,6 @@
 
         <div id="code-container">
             <div id="code" cols="50" rows="5" spellcheck="false"></div>
-            <div id="code-ghost" style="height:0;"></div>
         </div>
         
         <div id="button_and_output" style="width:100%;margin-top:10px;">

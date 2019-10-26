@@ -18,7 +18,7 @@ function D(x) { return document.getElementById(x) }
 
 
 function runCode() {
-  D('output').innerHTML = 'ß-reduction in process...'
+  D('output').innerHTML = 'ß-reduction in progress...'
   setTimeout(_ => (
     D('output').innerHTML = completeReduction( 
       window.ace.edit(D('code')).getSession().getValue(), D('optimize').checked ), 
@@ -37,6 +37,8 @@ document.body.onkeydown = function(e) { // ctrl + enter to run code
   e.ctrlKey && (e.keyCode === 13 || e.keyCode === 83) && runCode() 
 
   e.ctrlKey && e.keyCode === 81 && toggleNumbers(true)
+
+  e.ctrlKey && e.keyCode === 73 && toggleTheme()
 }
 
 
@@ -78,9 +80,6 @@ Set_Up_Editor: {
       if (e.action === 'insert' && e.lines.some(l => /[\\<>]/.test(l))) {
         fromServer = true
         const {row, column} = editor.getCursorPosition()
-        
-        // keep the shape of the screen intact, because editor.setValue removes all the text before replacing it
-        D('code-ghost').style.height = D('code').style.height
 
         editor.setValue(
           s.split`\n`.map(s => 
@@ -91,7 +90,6 @@ Set_Up_Editor: {
               '>','˃')
             ,'<','˂')
           ,'\\',λ) ).join`\n`)
-        D('code-ghost').style.height = 0
         editor.clearSelection()
         editor.selection.moveTo(row, column)
         fromServer = false
@@ -152,7 +150,7 @@ function showReductionSteps() {
 let lightTheme = false
 function toggleTheme() { 
   lightTheme ^= true
-  D('main-text').classList.toggle('light-theme');
+  document.body.classList.toggle('light-theme');
   D('output').classList.toggle('lt-output')
   document.body.classList.toggle('light-body')
   editor.setTheme( lightTheme ? "ace/theme/chrome" : "ace/theme/gruvbox");
