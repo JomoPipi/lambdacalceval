@@ -39,6 +39,8 @@ document.body.onkeydown = function(e) { // ctrl + enter to run code
   e.ctrlKey && e.keyCode === 81 && toggleNumbers(true)
 
   e.ctrlKey && e.keyCode === 73 && toggleTheme()
+
+  e.ctrlKey && e.keyCode === 32 && toggleFullscreen()
 }
 
 
@@ -49,6 +51,17 @@ document.body.onkeydown = function(e) { // ctrl + enter to run code
 
 function toggleNumbers(tgl) {
   editor.renderer.setShowGutter(D('togglenumbers').checked ^= +tgl);
+}
+
+
+
+
+
+
+
+function toggleFullscreen() {
+  document.body.classList.toggle('fullscreen-body')
+  D('code-container').classList.toggle('fullscreen')
 }
 
 

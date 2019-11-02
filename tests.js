@@ -815,3 +815,376 @@ TFFF = [] T ([] F ([] F ([] F null)))
 SFI '[˃[*]] TTTF
 
 */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+
+
+
+
+
+
+
+0  = false
+1  = + 0
+2  = + 1
+3  = + 2
+4  = + 3
+5  = + 4
+6  = + 5
+7  = + 6
+8  = + 7
+9  = + 8
+10  = + 9
+11  = + 10
+12  = + 11
+13  = + 12
+14  = + 13
+15  = + 14
+16  = + 15
+17  = + 16
+18  = + 17
+19  = + 18
+20  = + 19
+
+0' = pos 0
+1' = pos 1
+2' = pos 2
+3' = pos 3
+4' = pos 4
+5' = pos 5
+6' = pos 6
+7' = pos 7
+8' = pos 8
+9' = pos 9
+10' = pos 10
+
+-0' = neg 0
+-1' = neg 1
+-2' = neg 2
+-3' = neg 3
+-4' = neg 4
+-5' = neg 5
+-6' = neg 6
+-7' = neg 7
+-8' = neg 8
+-9' = neg 9
+-10' = neg 10
+
+
+
+id = λ x . x
+Φ = λ p . [] (+(fst p))(fst p)
+Y = λy.(λx.y(x x))(λx.y(x x))
+
+
+[] = λ a b s. s a b
+fst = λ p . p true
+snd = λ p . p false
+
+
+-- Bool
+if = λ cond then else . cond then else
+true  = λa b.a
+false = λa b.b
+not = λb. b false true
+and = λa b. a b false
+or = λ a b . a true b
+xor = λ a b . a (b false true) b
+
+
+
+-- Nat
++ = λ w y x . y (w y x)
+- = λ a b . b -1 a
+* = λ a b f . a (b f)
+** = λ a b . b a
+==0 = λ x . x false not false
+-1 = λ x . snd (x Φ (λ s . s 0 0))
+˃= = λ a b . ==0 (- b a)
+==   = λ a b . and (˃= a b) (˃= b a)
+˂ = λ a b . not (˃= a b)
+˃ = λ a b . not (˃= b a)
+min = λ a b . ˂ a b a b
+max = λ a b . ˃ a b a b
+%% = λ r a b . (˂ a b) a (r (- a b) (b))
+% = λ a b . ==0 b error:_mod_by_0 (Y %% a b)
+
+/% = λ r a b . (˂ a b) 0 (1 + (r (- a b) (b)))
+/ = λ a b . ==0 b error:_division_by_0 (Y /% a b)
+
+-- Define the function n! = n · (n − 1)· · · 1 recursively.
+fact% = λ r n . ==0 n 1 (* n(r(-1 n)))
+fact = λ n . Y fact% n
+
+
+
+-- Int
+abs = snd
+˃=0 = λ n . or (fst n) (==0 (abs n))
+˂0  = λ n . not (˃=0 n)
+pos = λ n . [] true n
+neg = λ n . [] false n
+icyhot = λ a b . xor (˃=0 a) (˃=0 b)
+add = λ a b . (λ A B C D . 
+    if (xor C D)
+      (if (˃ A B)
+        ([] C (- A B))
+        ([] D (- B A)))
+      ([] C (A + B))
+  ) (abs a) (abs b) (˃=0 a) (˃=0 b)
+invert = λ n . [] (not (˃=0 n)) (abs n)
+sub = λ a b . add a (invert b)
+div = λ a b . (icyhot a b neg pos) (/ (abs a) (abs b))
+mul = λ a b . (icyhot a b neg pos) (* (abs a) (abs b))
+
+
+
+
+
+isCommonDiv = λ a b n . and (==0(% a n)) (==0(% b n))
+-- FCD% = λ r a b i end . ˃= i end 0 (isCommonDiv a b i i (r a b (+ i) end))
+-- findCommonDiv = λ a b . Y FCD% a b 2 (+ (min a b))
+GCF% = λ r a b i . == i 1 1 (isCommonDiv a b i i (r a b (-1 i)))
+GCF = λ a b . Y GCF% a b (min a b)
+simplify = λ a b . (λ gcf . [] (/ a gcf) (/ b gcf)) (GCF a b)
+
+
+
+
+-- Frac
+frac = λ n d .
+  (λ ND .
+    (λ N D .
+      [] ((icyhot n d) neg pos N) D
+    ) (fst ND) (pos (snd ND))
+  ) (simplify (abs n) (abs d))
+reciprocal = λ f . frac (snd f) (fst f)
+
+mulFracs = λ a b . (λ na nb da db . 
+    frac 
+      (mul na nb)
+      (mul da db)
+  ) (fst a) (fst b) (snd a) (snd b)
+  
+divFracs = λ a b . mulFracs a (reciprocal b)
+
+1/3 = [] 1' 3'
+2/3 = [] 2' 3'
+2/9 = [] 2' 9'
+2/1 = [] 2' 1'
+4/1 = [] 4' 1'
+1/2 = [] 1' 2'
+-1/2 = [] -1' 2'
+1/1 = [] 1' 1'
+
+addFracs = λ a b . (λ na nb da db . 
+    frac 
+      (add (mul na db) (mul nb da))
+      (mul da db)
+  ) (fst a) (fst b) (snd a) (snd b)
+  
+subFracs = λ a b . addFracs a (invertFrac b)
+invertFrac = λ f . frac (invert(fst f)) (snd f)
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+-- List
+null = λ f x . x
+U = λ a l f x . f a (l f x)
+head = λ l . l true error:called_head_on_null
+isNull = λ l . l (λa b.false) true
+tail = λ l . fst (l ( λa b. [] (snd b) (U a (snd b)) ) ([] null null))
+
+length% = λ r lst . isNull lst 0 (+(r(tail lst)))
+length = λ list . Y length% list
+
+reverse% = λ r list result .
+  isNull list
+    result
+    (r (tail list) (U (head list) result))
+  
+reverse = λ list . Y reverse% list null
+
+
+12345 = U 1 (U 2 (U 3 (U 4 (U 5 null))))-- 10101100
+
+T = true
+F = false
+
+NTWBF% = λ r tape p result .
+  isNull tape
+    result
+    (r (tail tape) (sub p 1') (U (==0 (abs p) (not(head tape)) (head tape)) result))
+  
+newTapeWithBitFlipped = λ tape p . reverse (Y NTWBF% tape p null)
+
+elemAt = λ i list . head (drop i list)
+drop   = λ n list . n tail list
+dropRight = λ n list . reverse (n tail (reverse list))
+take = λ n list . dropRight (- (length list) n) list
+
+
+'˃' = 1
+'˂' = 2
+'*' = 3
+'[' = 4
+']' = 5
+
+jp]% = λ r code idx x .
+  or (isNull code) (==0 x)
+    idx
+    ((λ f . r (tail code) (+ idx) ((f ']') (-1 x) ((f '[') (+ x) x))) (λ x . == x (head code)))
+
+jumpPast] = λ code idx . Y jp]% (drop (+ idx) code) (+ idx) 1
+
+jb[% = λ r code idx x .
+  or (isNull code) (==0 x)
+    idx
+    ((λ f . r (tail code) (+ idx) ((f '[') (-1 x) ((f ']') (+ x) x))) (λ x . == x (head code)))
+
+jumpBackTo[ = λ code idx . - idx (Y jb[% (reverse (take idx code)) 0 1)
+
+-- code :: [Nat]
+-- tape :: [Bool]
+interpreter% = λ r code idx tape ptr . 
+  or (˃= idx (length code)) (or (˂0 ptr) (˃= (abs ptr) (length tape)))
+    tape
+    (
+      (λ v f .
+        
+        (f '˃')                (r code (+ idx) tape (add ptr 1')) (
+        
+        (f '˂')                (r code (+ idx) tape (sub ptr 1')) (
+        
+        (f '*')                (r code (+ idx) (newTapeWithBitFlipped tape ptr) ptr) (
+        
+        (and (f '[') (not v))  (r code (jumpPast] code idx) tape ptr) (
+        
+        (and (f ']') v)        (r code (jumpBackTo[ code idx) tape ptr) (
+        
+                                r code (+ idx) tape ptr
+        )))))
+      )
+      (elemAt (abs ptr) tape) (λ x . == x (elemAt idx code))
+    )
+interpreter = λ code tape . Y interpreter% code 0 tape 0'
+
+-- ˃*˃*, 00101100 -˃ 01001100
+
+TFTFTTFF = U T (U F (U T (U F (U T (U T (U F (U F null)))))))
+
+FFTTFTFT = U F (U F (U T (U T (U F (U T (U F (U T null)))))))
+
+TTTFTTFF = U T (U T (U T (U F (U T (U T (U F (U F null)))))))
+
+FFTFTTFF = U F (U F (U T (U F (U T (U T (U F (U F null)))))))
+FTFFTTFF = U F (U T (U F (U F (U T (U T (U F (U F null)))))))
+FFFFFFFF = U F (U F (U F (U F (U F (U F (U F (U F null)))))))
+TTTTTTTT = U T (U T (U T (U T (U T (U T (U T (U T null)))))))
+TFFFFFFF = U T (U F (U F (U F (U F (U F (U F (U F null)))))))
+TFF      = U T (U F (U F null))
+'11001'  = U T (U T (U F (U F (U T null))))
+'01100'  = U F (U T (U T (U F (U F null))))
+
+˃*˃*  = U '˃' (U '*' (U '˃' (U '*' null)))
+*[˃*] = U '*' (U '[' (U '˃' (U '*' (U ']' null))))
+[˃*]  = U '[' (U '˃' (U '*' (U ']' null)))
+*[˃[*]]    = U '*' (U '[' (U '˃' (U '[' (U '*' (U ']' (U ']' null))))))
+*˃[[]*˃]˂* = U '*' (U '˃' (U '[' (U 
+                     '[' (U ']' (U '*' (U 
+                     '˃' (U ']' (U '˂' (U '*' null)))))))))
+                     
+[*˃[˃*˃]˃] = U '[' (U '*' (U '˃' (U 
+               '[' (U '˃' (U '*' (U 
+               '˃' (U ']' (U '˃' (U ']' null)))))))))
+
+'01001'  = U F (U T (U F (U F (U T null))))
+'10001'  = U T (U F (U F (U F (U T null))))
+
+interpreter *[˃[*]] '01001' 
+
+
+-- Test.assertEquals(interpreter('[*˃[˃*˃]˃]', '11001'), '01100', 'Your interpreter should also work properly with nested loops');
+-- Test.assertEquals(interpreter('[˃[*˃*˃*˃]˃]', '10110'), '10101', 'Your interpreter should also work properly with nested loops');
+
+
+
+
+
+*/

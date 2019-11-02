@@ -23,7 +23,7 @@
     
     <center>
 
-        <center id="main-text" class="maintext" style="margin-bottom: 1%;">
+        <center id="main-text" class="maintext">
             Normal Order λ Calculus Evaluator <br>
             <span style="text-align: left;"> Typing a backslash (<code>\</code>) results in the lambda symbol. </span>
         </center>
@@ -40,6 +40,8 @@
             <br>
             <input type="checkbox" id="togglenumbers" checked="true" onchange="toggleNumbers(0)"> show line numbers (ctrl + Q)
             
+            <br> <br> ctrl + space to toggle fullscreen
+
         </div>
 
         <div id="resources" class="maintext" >
@@ -53,7 +55,7 @@
             </div>
         </div>
 
-        <div id="code-container">
+        <div id="code-container" class="code-cntainer">
             <div id="code" cols="50" rows="5" spellcheck="false"></div>
         </div>
         
