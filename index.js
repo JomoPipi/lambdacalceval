@@ -5,7 +5,7 @@ const HISTORY = [], VARIABLES = {}, EXP_MEMO = {}, NORMAL_FORM = {}, DIVERGENT =
 
 const treadCarefully = (exp,outer,limit) => finalStep(betaReduce(exp, { outer_scope_awaits_lambda: outer, limit: limit||200 }))
 
-const CheckIfWeTerminatedReductionSet = new Set(λ)
+const CheckIfWeTerminatedReductionSet = new Set(λ), singleLetterVARIABLENames = new Set()
 
 D('code').focus()
 
@@ -27,7 +27,7 @@ function completeReduction(code, optimize) {
         return improper(maybeError.value)
     
     ;[λ,...Object.keys(VARIABLES)].forEach(key => CheckIfWeTerminatedReductionSet.add(key))
-
+    Object.keys(VARIABLES).forEach(v => v.length === 1 && singleLetterVARIABLENames.add(v))
     for (const name in VARIABLES) {
         const value = VARIABLES[name]
         HISTORY.length = HISTORY.iter = 0
@@ -245,7 +245,6 @@ function betaReduce(expr, options) {
 
 
     if (a[0] !== λ) { // well, it needs to be a lambda in order to apply it to b
-        // for (const v of tokenize(terms.slice(1).join` `)) outervars.add(v)
         a = betaReduce(a, {
             outer_scope_awaits_lambda: true, 
             outsideWrap: [`${leftW}(`, `${gatherTerms(terms.slice(1))})${rightW}`, ''],
@@ -259,7 +258,6 @@ function betaReduce(expr, options) {
 
         if (a[0] !== λ) { // it didn't reduce to a lambda, so we can't reduce further on this scope
             const result = gatherTerms(terms.slice(1).reduce((a,term,i) => {
-                // for (const v of tokenize(terms.slice(i+3).join``)) outervars.add(v)
                 // the ternary is there to stop the expansion when we don't need to it anymore. eg: s 1 2 stays like that
                 return [...a, /* tokenize(term).length === 1 ? term : */ betaReduce(term, {
                     outsideWrap: 
@@ -304,9 +302,10 @@ function gatherTerms(terms) {
 
 function makeNextFreeVarFunc(allvars) {
     return function() {
-        for (let i = 1;; i++) {
-            for(let j = 97; j<123; j++) {
-                const v = String.fromCharCode(j).repeat(i)
+        for (let j = 1;; j++) {
+            for(let i = 97;; i++) {
+                if (i === 160) continue
+                const v = String.fromCharCode(i)
                 if (!allvars.has(v)) {
                     allvars.add(v)
                     return v
@@ -331,8 +330,8 @@ function applyAB(a, b, outervars) {
     const i = a.indexOf('.')
     const variables = a.slice(1,i).trim().split(' ')
     // rename the other variables if they are equal to b or variables within b
-    const btokens = new Set(tokenize(b));
-    const allvars = new Set(variables.concat(b)); outervars.forEach(x => allvars.add(x))
+    const btokens = new Set(tokenize(b))
+    const allvars = new Set([variables, ...btokens, ...outervars, ...singleLetterVARIABLENames])
     const nextFree = makeNextFreeVarFunc(allvars)
     const replaceMap = variables.slice(1).reduce((a,v) => btokens.has(v) ? (a[v] = nextFree(), a) : a, {})
     for (const i in variables) {
