@@ -178,7 +178,8 @@ function curryStep(exp) {
 
 // betaReduce :: (String, Object) -> String
 function betaReduce(expr, options) {
-    const {outer_scope_awaits_lambda, outsideWrap ,limit,charLimit} = options
+    const { outer_scope_awaits_lambda, outsideWrap ,limit, charLimit } = options
+    const outervars = (options.outervars=options.outervars||new Set())
     HISTORY.iter++
     if (limit) {
         if (HISTORY.iter > limit || (charLimit && expr.length > charLimit)) { 
@@ -220,20 +221,22 @@ function betaReduce(expr, options) {
         // if (![λ, ...Object.keys(VARIABLES)].some(t => tokens.includes(t))) {
             return a; // no lambdas, no variables, no possible way to reduce
         }
+        const i = a.indexOf('.') 
+        for (const v of a.slice(1,i).split` `) outervars.add(v)
         if (outer_scope_awaits_lambda) {
-
+            
             return a[0] === λ ?
             a // it's a function, which is what the outer scope was waiting for, so we can end the recursion here.
             : betaReduce(a, options) // it's not a function, so we should recurse into it and try to see if it resolves to one.
 
         } else {
             if (a[0] === λ) { // we have a lambda, so return head + betaReduce(body)
-                const i = a.indexOf('.') 
                 return a.slice(0, i+1) + betaReduce(a.slice(i+1), {
                     outsideWrap: [leftW + a.slice(0,i+1), rightW, true],
                     outer_scope_awaits_lambda, 
                     charLimit,
-                    limit
+                    limit,
+                    outervars
                 })
             }
             else return betaReduce(a, options)
@@ -242,34 +245,41 @@ function betaReduce(expr, options) {
 
 
     if (a[0] !== λ) { // well, it needs to be a lambda in order to apply it to b
-        a = betaReduce(a, { outer_scope_awaits_lambda: true, outsideWrap: [`${leftW}(`, `${gatherTerms(terms.slice(1))})${rightW}`, ''], limit, charLimit })
+        // for (const v of tokenize(terms.slice(1).join` `)) outervars.add(v)
+        a = betaReduce(a, {
+            outer_scope_awaits_lambda: true, 
+            outsideWrap: [`${leftW}(`, `${gatherTerms(terms.slice(1))})${rightW}`, ''],
+            limit, 
+            charLimit,
+            outervars
+        })
         // notice that we set outer_scope_awaits_lambda to true.
         // this means that the reductions will stop when it becomes a lambda, 
         // even if it's not yet fully reduced.
 
         if (a[0] !== λ) { // it didn't reduce to a lambda, so we can't reduce further on this scope
-            const result = gatherTerms(terms.slice(1).reduce((a,term,i) => (
+            const result = gatherTerms(terms.slice(1).reduce((a,term,i) => {
+                // for (const v of tokenize(terms.slice(i+3).join``)) outervars.add(v)
                 // the ternary is there to stop the expansion when we don't need to it anymore. eg: s 1 2 stays like that
-                [...a, /* tokenize(term).length === 1 ? term : */ betaReduce(term, {
+                return [...a, /* tokenize(term).length === 1 ? term : */ betaReduce(term, {
                     outsideWrap: 
                     [
                         `${leftW}(${gatherTerms(a)}`,
                         `${gatherTerms(terms.slice(i+3))})${rightW}`
                     ],
                     charLimit,
-                    limit
+                    limit,
+                    outervars
                 })]
-        ), [a]))
+        }, [a]))
 
             return result
         }
     }
-
-
     // if code reaches here, then a is a lambda and we can simply apply it to b.
-    const applied = `(${applyAB(a,b)})`
+    const applied = `(${applyAB(a,b,outervars)})`
     if (MAXIMUM_OVERDRIVE.checked) EXP_MEMO[memokey] = applied
-    return betaReduce(applied + gatherTerms(terms.slice(2)) , options)
+    return betaReduce(applied + gatherTerms(terms.slice(2)), options)
 }
 
 
@@ -313,16 +323,16 @@ function makeNextFreeVarFunc(allvars) {
 
 
 
-function applyAB(a,b) {
+function applyAB(a, b, outervars) {
     /* 
         apply function a to expression b 
         don't rename any bound variables of lambdas inside b
     */
     const i = a.indexOf('.')
-    const variables = a.slice(1,i).trim().split(' ') 
+    const variables = a.slice(1,i).trim().split(' ')
     // rename the other variables if they are equal to b or variables within b
-    const btokens = new Set(tokenize(b))
-    const allvars = new Set(variables.concat(b))
+    const btokens = new Set(tokenize(b));
+    const allvars = new Set(variables.concat(b)); outervars.forEach(x => allvars.add(x))
     const nextFree = makeNextFreeVarFunc(allvars)
     const replaceMap = variables.slice(1).reduce((a,v) => btokens.has(v) ? (a[v] = nextFree(), a) : a, {})
     for (const i in variables) {

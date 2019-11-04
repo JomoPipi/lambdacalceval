@@ -60,7 +60,7 @@ function equivFormat(x, nf) {
     if (i === 0) {
         const i = x.indexOf('.')
         const params = x.slice(1,i).trim().split` `
-        return equivFormat(params.reduce(a => applyAB(a, nf()), x), nf)
+        return equivFormat(params.reduce(a => applyAB(a, nf(), new Set()), x), nf)
     }
     if (i < 0)
         return x
@@ -147,7 +147,7 @@ function dim(x, a) {
     const space = 180
     const y = x.length
     const z = space/2 > a ? space/2 - a : 0
-    if (y > z) x = x.slice(0, z) + '  ... ' + x.slice(y - z)
+    // if (y > z) x = x.slice(0, z) + '  ... ' + x.slice(y - z)
     return `<span class="dim" style="color:#777;"> ${x} </span>`
 }
 
