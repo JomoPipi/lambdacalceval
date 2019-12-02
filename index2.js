@@ -1,12 +1,11 @@
 'use strict'
 
 
-
 const HISTORY = [], DEFINITIONS = {}, EXP_MEMO = {}, NORMAL_FORM = {}, DIVERGENT = new Set(), MAXIMUM_OVERDRIVE = D('optimize')
 
 const treadCarefully = (exp,outer,limit) => finalStep(betaReduce(exp, { outer_scope_awaits_lambda: outer, limit: limit||1000 }))
 
-const CheckIfWeTerminatedReductionSet = new Set(), singleLetterVARIABLENames = new Set()
+const CheckIfWeTerminatedReductionSet = new Set(λ), singleLetterVARIABLENames = new Set()
 
 D('code').focus()
 
@@ -17,7 +16,7 @@ function completeReduction(code, optimize) {
         `<span style="color:#f44;">${x}</span>` 
 
 
-    HISTORY.length = 0                          // clear variables from the last time
+    HISTORY.length = 0                         // clear variables from the last time
     DIVERGENT.clear()
     CheckIfWeTerminatedReductionSet.clear()
     ;[DEFINITIONS, EXP_MEMO, NORMAL_FORM].forEach(clearIt)
@@ -196,11 +195,10 @@ function betaReduce(expr, options) {
     if (EXP_MEMO[memokey]) 
         return betaReduce( EXP_MEMO[memokey] + gatherTerms(terms.slice(2)) , options )
 
-
     let a = expand(terms[0])
     const b = terms[1] 
 
-    if (terms.length === 0) throw 'something is wrong'
+    if (a == null) throw 'something is wrong'
 
     const wrap = (x, [l,r] = NoP ? ['',''] : '()') => dim(leftW + l, x.length) + x + dim(r + rightW, x.length)
     if (!MAXIMUM_OVERDRIVE.checked) {
@@ -215,14 +213,15 @@ function betaReduce(expr, options) {
             HISTORY.push( wrap( newExp ) )
         }
     }
-    
+        
 
-    if (terms.length === 1) {
+    if (b == null) {
         const tokens = tokenize(a)
         if (tokens.every(t => !CheckIfWeTerminatedReductionSet.has(t))) {
-            return a; // no λs, no definitions, no possible way to reduce
+        // if (![λ, ...Object.keys(DEFINITIONS)].some(t => tokens.includes(t))) {
+            return a; // no lambdas, no variables, no possible way to reduce
         }
-        const i = a.indexOf('.')
+        const i = a.indexOf('.') 
         for (const v of a.slice(1,i).split` `) outervars.add(v)
         if (outer_scope_awaits_lambda) {
             
@@ -243,9 +242,9 @@ function betaReduce(expr, options) {
             else return betaReduce(a, options)
         }
     }
-    
 
-    if (a[0] !== λ) { // it needs to be a lambda in order to apply it to b
+
+    if (a[0] !== λ) { // well, it needs to be a lambda in order to apply it to b
         a = betaReduce(a, {
             outer_scope_awaits_lambda: true, 
             outsideWrap: [`${leftW}(`, `${gatherTerms(terms.slice(1))})${rightW}`, ''],
@@ -270,7 +269,7 @@ function betaReduce(expr, options) {
                     limit,
                     outervars
                 })]
-        }, [a]))
+            }, [a]))
 
             return result
         }
@@ -405,4 +404,32 @@ function getTerms(s) {
         if (a) return [[...r,''],x+1]
         return [/\s/.test(v) ? r : [...r,v], x, y, z]
     },[[],0,0,0])[0].map(stripUselessParentheses)
+}
+
+
+
+
+
+
+
+
+function stripUselessParentheses(t) {
+    // strip away unnecessary parenthesis
+    t = t.trim()
+    while (true) {
+        const i = [...t].findIndex((v,j) => v==='(' && t[j+2] === ')')
+        if (i >= 0) {
+            t = (t.slice(0,i) + ' ' + t[i+1] + ' ' + t.slice(i+3)).trim()
+            continue
+        }
+        if (t[0]==='(') {
+            for(let i=1,x=1; t[i]; i++) {
+                x += t[i] === '(' ?  1 : t[i] === ')' ? -1 : 0
+                if (!x && t[i+1]) return t
+            }
+            t = (t.slice(1,-1)).trim()
+            continue
+        }
+        return t
+    }
 }

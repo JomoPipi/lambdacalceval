@@ -41,7 +41,7 @@ function containsErrors(allLines) {
             if (decl || !currentVar)
                 return doError('Illegal indentation', row)
 
-            VARIABLES[currentVar] += ' ' + line
+            DEFINITIONS[currentVar] += ' ' + line
             continue
         }
 
@@ -55,20 +55,20 @@ function containsErrors(allLines) {
 
         const [name,value] = line.split` = `.map(x=>x.trim())
 
-        if (VARIABLES[name])
+        if (DEFINITIONS[name])
             return doError(`${name} has already been declared.`, row)
 
-        VARIABLES[name] = value
+        DEFINITIONS[name] = value
         currentVar = name
 
         if (/[λ.() ]/.test(name)) 
             return doError('Names shouldn\'t contains any of these characers <code>"λ.() "</code>.', row)
     }
-    for (const name in VARIABLES) {
-        const value = finalStep(VARIABLES[name])
+    for (const name in DEFINITIONS) {
+        const value = finalStep(DEFINITIONS[name])
         const error = anyError(value, allLines.findIndex(row => row.trim().startsWith(name)))
         if (error) {
-            log(name,VARIABLES[name])
+            log(name,DEFINITIONS[name])
             return error
         }
     }

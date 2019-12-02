@@ -1,3 +1,4 @@
+'use strict'
 
 
 
@@ -7,7 +8,26 @@
 
 
 const λ = 'λ'
-log=console.log
+const DEFAULT_USERCODE = `
+
+true  = λ a b . a
+false = λ a b . b
+
+
+-- Declarations may span multiple lines, as long as you indent after the first line.
+and = λ x y .
+  x 
+    (y true false)
+    false
+-- the same assignment in one line: and = λx y.x(y true false)false
+
+
+-- Following the last variable assignment (if any) should be the expression to be evaluated:
+and true true
+    
+`
+const USERCODE = localStorage.getItem('USERCODE')||DEFAULT_USERCODE
+const log=console.log
 function D(x) { return document.getElementById(x) }
 
 
@@ -19,11 +39,13 @@ function D(x) { return document.getElementById(x) }
 
 function runCode() {
   D('output').innerHTML = 'ß-reduction in progress...'
-  setTimeout(_ => (
-    D('output').innerHTML = completeReduction( 
-      window.ace.edit(D('code')).getSession().getValue(), D('optimize').checked ), 
-    D('code').focus()),
-    100 + Math.random()*200|0)
+  setTimeout(_ => {
+      const codeEditor = D('code')
+      const USERCODE = window.ace.edit(codeEditor).getSession().getValue()
+      localStorage.setItem('USERCODE', USERCODE)
+      D('output').innerHTML = completeReduction(USERCODE, D('optimize').checked )
+      codeEditor.focus()
+    }, 100 + Math.random()*200|0)
 }
 
 
@@ -80,14 +102,8 @@ Set_Up_Editor: {
       tabSize: 2
     }
     editor.setAutoScrollEditorIntoView(true);
-    // editor.container.style.overflowY = 'auto'
-    // editor.container.style.maxHeight = '55vh'
     let fromServer
     editor.getSession().on('change', function(e) {
-        // const newHeight = editor.getSession().getScreenLength() * 
-        // (editor.renderer.lineHeight + editor.renderer.scrollBar.getWidth());
-        // editor.container.style.height = `${newHeight * 1.5}px`;
-        // editor.resize();
       if (fromServer) return;
       const s = editor.getValue()
       if (e.action === 'insert' && e.lines.some(l => /[\\<>]/.test(l))) {
@@ -108,31 +124,11 @@ Set_Up_Editor: {
         fromServer = false
       }
     })
-    editor.getSession().setValue(`
-
-true  = λ a b . a
-false = λ a b . b
-
-
--- Declarations may span multiple lines, as long as you indent after the first line.
-and = λ x y .
-  x 
-    (y true false)
-    false
--- the same assignment in one line: and = λx y.x(y true false)false
-
-
--- Following the last variable assignment (if any) should be the expression to be evaluated:
-and true true
-    
-`)
-    // D('code').style.borderRadius = '10px'
+    editor.getSession().setValue(USERCODE)
     editor.setOptions(options);
-    editor.setTheme("ace/theme/gruvbox");
-    editor.getSession().setMode("ace/mode/cobol"); // actually it's the lamdba mode!!
+    editor.setTheme("ace/theme/gruvbox")
+    editor.getSession().setMode("ace/mode/cobol") // actually it's the lamdba mode!!
     editor.place = _ => {
-      
-      // if (window.innerWidth <= 700) return; 
       const row = editor.session.getLength() - 2
       editor.selection.moveTo(row)
       editor.navigateLineEnd()

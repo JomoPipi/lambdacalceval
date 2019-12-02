@@ -117,7 +117,7 @@ code {
     border: 1px solid white;
     margin-bottom: 1%;
     display: none;
-    height: 100px;
+    height: 100%;
 }
 #resources {
     text-align: left;

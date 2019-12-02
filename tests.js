@@ -1,3 +1,6 @@
+'use strict'
+
+
 const test2 = [`
 true  = λ a b . a
 false = λ a b . b
