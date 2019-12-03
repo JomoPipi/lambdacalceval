@@ -181,9 +181,10 @@ function curryStep(exp) {
 function betaReduce(expr, options) {
     const { outer_scope_awaits_lambda, outsideWrap ,limit, charLimit } = options
     const outervars = (options.outervars=options.outervars||new Set())
-    HISTORY.iter++
+    HISTORY.iter = (HISTORY.iter+1)|0
     if (limit) {
         if (HISTORY.iter > limit || (charLimit && expr.length > charLimit)) { 
+            return expr
             throw "possible divergent expression"
         }
     }
@@ -330,10 +331,14 @@ function applyAB(a, b, outervars) {
     const i = a.indexOf('.')
     const variables = a.slice(1,i).trim().split(' ')
     // rename the other variables if they are equal to b or variables within b
-    const btokens = new Set(tokenize(b))
+    const btokens = new Set(tokenize(b)) // change this to bfreevars if more efficient
     const allvars = new Set([variables, ...btokens, ...outervars, ...singleLetterVARIABLENames])
     const nextFree = makeNextFreeVarFunc(allvars)
-    const replaceMap = variables.slice(1).reduce((a,v) => btokens.has(v) ? (a[v] = nextFree(), a) : a, {})
+    const replaceMap = variables.slice(1).reduce((a,v) => 
+        btokens.has(v) ? (
+            a[v] = nextFree(), 
+            outervars.add(a[v]),
+            a) : a, {})
     for (const i in variables) {
         if (replaceMap[variables[i]])
             variables[i] = replaceMap[variables[i]]

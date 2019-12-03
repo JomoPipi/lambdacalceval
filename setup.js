@@ -8,6 +8,7 @@
 
 
 const λ = 'λ'
+const SYNTAX_TOKENS = 'λ.()'
 const DEFAULT_USERCODE = `
 
 true  = λ a b . a
