@@ -28,16 +28,45 @@ function equivFormat(x, nf) {
         gatherTerms(terms.map(x => equivFormat(x, nf)))
 
 }
-
 //   SLOW
 function isEquiv(a,b) {
     const ab = a + b, setA = new Set(ab), setB = new Set(ab)
     const nfa = makeNextFreeVarFunc(setA)
     const nfb = makeNextFreeVarFunc(setB)
-
+    if (a.length!==b.length) return false
+    for (let i = 0; i < a.length; i++)
+        if ('().λ'.includes(a[i]) && a[i] !== b[i])
+            return false
     if (equivFormat(a,nfa) !== equivFormat(b,nfb)) return false
     return setA.size === setB.size
 }
+
+// function isEquiv(a,b) {
+//     // a and b are in normal form
+//     const nf = makeNextFreeVarFunc(new Set(a + b))
+    
+//     const [i,j] = [a,b].map(x=>x.indexOf(λ))
+//     if (i !== j) return false
+//     if (i < 0) {
+//         return a === b
+//     }
+//     if (i === 0) {
+//         const x = a.indexOf('.'), y = b.indexOf('.'), z = nf()
+//         if (x !== y) return false
+//         const pA = a.slice(1,x).trim().split` `
+//         const pB = b.slice(1,y).trim().split` `
+//         return isEquiv(pA.reduce(a => applyAB(a, z, new Set()), a), 
+//                        pB.reduce(a => applyAB(a, z, new Set()), b))
+//     }
+
+
+//     const terms = getTerms(a)
+//     const termsB = getTerms(b)
+//     if (terms.length !== termsB.length) return false
+//     return terms.length === 1 ? 
+//         terms[0][0] === λ ? isEquiv(terms[0], termsB[0]) : terms[0] === termsB[0] : 
+//         terms.every((x,i) => isEquiv(x, termsB[i]))
+// }
 
 
 

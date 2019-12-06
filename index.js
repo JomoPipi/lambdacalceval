@@ -12,7 +12,11 @@ D('code').focus()
 
 function completeReduction(code, optimize) {
     const then = Date.now()
-    const allLines = code.split`\n`.map(s => s.split("--")[0]) 
+    const allLines = code.split`\n`
+        .map(s => s.split("--")[0].replace(/-\*.*\*-/g,''))
+    for (let incomment = 0, i = 0; i < allLines.length; i++) {
+        // if ()
+    }
     const improper = x =>                       // error style
         `<span style="color:#f44;">${x}</span>` 
 
@@ -78,7 +82,7 @@ function condense(exp, i=0) {
                 if ([...reduced].some((c,i) => 'λ.()'.includes(c) && c !== exp[i])) 
                     continue
                     
-                if (isEquiv(reduced, exp))
+                if (isEquiv(exp, reduced))
                     return key
             }
         } catch (e) { 

@@ -5,14 +5,30 @@ var oop = require("../lib/oop");
 var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
 
 var CobolHighlightRules = function() {
-
+    const DECLARATIONS = new Set()
     var keywordMapper = this.createKeywordMapper({
     }, "identifier", true);
 
     this.$rules = {
+        "commented-out" : [{
+            token : "comment",
+            regex : /.*\*\-/,
+            next : "start"
+        }, {
+            token : "comment",
+            regex : /.*/,
+            next : "commented-out"
+        }],
         "start" : [ {
             token : "comment",
             regex : "--.*$"
+        },{
+            token : "comment",
+            regex : /\-\*/,
+            next : "commented-out"
+        },{
+            token : "parameters:not complete" ,
+            regex : /([^λ.]+(?=\.))/,
         },{
             token : "constant.numeric", // float
             regex : "[λ.]"
@@ -21,12 +37,12 @@ var CobolHighlightRules = function() {
             regex : "[λ.]"
         }, {
             token : "variable",
-            regex : /(?=.*\=)(.+?(?=(\s\=\s)))/
+            regex : /(?=.*\=)(^((?!-\*).)+?)(?=(\s\=\s))/
         }, {
             token : "string",
             regex : "[(]"
         }, {
-            token : "string",
+            token : "storage",
             regex : /\s[=]\s/
         }, {
             token : "string",
@@ -59,6 +75,7 @@ oop.inherits(Mode, TextMode);
 (function() {
 
     this.lineCommentStart = "--";
+    this.blockComment = {start: "-*", end: "*-"};
 
     this.$id = "ace/mode/cobol";
 }).call(Mode.prototype);
