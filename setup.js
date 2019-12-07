@@ -15,17 +15,21 @@ true  = λ a b . a
 false = λ a b . b
 
 
--- Declarations may span multiple lines, as long as you indent after the first line.
 and = λ x y .
+-* 
+  Declarations may span multiple lines, 
+  as long as you indent after the first line.
+*-
   x 
     (y true false)
     false
--- the same assignment in one line: and = λx y.x(y true false)false
+-- the same assignment in one line: 
+&& = λx y.x(y true false)false
 
 
 -- Following the last variable assignment (if any) should be the expression to be evaluated:
 and true true
-    
+ 
 `
 const USERCODE = localStorage.getItem('USERCODE')||DEFAULT_USERCODE
 const log=console.log

@@ -14,10 +14,9 @@ var CobolHighlightRules = function() {
             token : "comment",
             regex : /.*\*\-/,
             next : "start"
-        }, {
+        },{
             token : "comment",
-            regex : /.*/,
-            next : "commented-out"
+            regex : /.*/
         }],
         "start" : [ {
             token : "comment",
@@ -27,9 +26,13 @@ var CobolHighlightRules = function() {
             regex : /\-\*/,
             next : "commented-out"
         },{
-            token : "parameters:not complete" ,
-            regex : /([^λ.]+(?=\.))/,
-        },{
+            token : "comment",
+            regex : /\-\*.*?\*-/,
+            next : "commented-out"
+        },/*{
+            // token : "parameters:not complete" ,
+            // regex : /([^λ.]+(?=\.))/,
+        }*/{
             token : "constant.numeric", // float
             regex : "[λ.]"
         }, {

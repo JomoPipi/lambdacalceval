@@ -13,10 +13,22 @@ D('code').focus()
 function completeReduction(code, optimize) {
     const then = Date.now()
     const allLines = code.split`\n`
-        .map(s => s.split("--")[0].replace(/-\*.*\*-/g,''))
-    for (let incomment = 0, i = 0; i < allLines.length; i++) {
-        // if ()
+        .map(s => s.split("--")[0].replace(/-\*.*\*-/,''))
+    for (let incomment = false, i = 0; i < allLines.length; i++) {
+        const line = allLines[i], x = line.indexOf('-*'), y = line.lastIndexOf('*-')
+        if (incomment) {
+            if (y >= 0) {
+                allLines[i] = line.slice(y+2)
+                incomment = false
+            } else {
+                allLines[i] = ''
+            }
+        } else if (x >= 0) {
+            allLines[i] = line.slice(0,x)
+            incomment = true
+        }
     }
+    log('allLines =',allLines.join`\n`)
     const improper = x =>                       // error style
         `<span style="color:#f44;">${x}</span>` 
 
