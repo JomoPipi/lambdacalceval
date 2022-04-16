@@ -181,28 +181,96 @@ function lex(s: string): Token[] {
 }
 
 type Expr = Func | Var | FuncApplication;
+// parse((A)) -> parse(A)
 type Func = { var: Var; body: Expr };
 type Var = string;
 type FuncApplication = { func: Expr; arg: Expr };
 
-// A B C D = ((A B) C) D
-
-// X C \x 123 D
-// Y D
-// Z
-
-function parse(tokens: Token[]): Expr {
-  let i = 0;
-  // switch tokens[i] {
-  // case Tokens.LAMBDA: {
-  //     // parse function and return
-  //     break;
-  // }
-  // abc def
-  // abc
-
-  // }
-  return "d";
+function consume(tokens: Token[], tokenType: TokenType): Token {
+  if (tokens[0] === undefined) {
+    throw `tokens is empty`;
+  }
+  if (tokens[0].type === tokenType) {
+    return tokens.shift()!;
+  } else {
+    throw `expected ${tokenType} but got ${JSON.stringify(tokens[0])}`;
+  }
 }
-const sample = "\\x . x\n(abcjd)";
-console.log(lex(sample));
+
+// A B C D = (A B C) D = (A B) C D = ((A B) C) D
+
+// A B C D
+
+function funcApplication(terms: Expr[]): Expr {
+  const arg = terms.pop()!;
+  if (terms.length === 0) {
+    return arg;
+  }
+  return {
+    func: funcApplication(terms),
+    arg,
+  };
+}
+
+function parseExpr(tokens: Token[]): Expr {
+  //   const term = parseTerm(tokens);
+  //   if (tokens.length === 0) {
+  //     return term;
+  //   }
+  //   const rightBinding = {
+  //     func: term,
+  //     arg: parseExpr(tokens),
+  //   };
+  const terms = [];
+  while (tokens.length > 0) {
+    terms.push(parseTerm(tokens));
+  }
+  return funcApplication(terms);
+}
+// "A B C"
+// ['A', 'B',' C']
+
+function parseTerm(tokens: Token[]): Expr {
+  switch (tokens[0].type) {
+    case TokenType.LAMBDA: {
+      consume(tokens, TokenType.LAMBDA);
+      const nameToken = consume(tokens, TokenType.IDENTIFIER);
+      consume(tokens, TokenType.PERIOD);
+      const expression = parseExpr(tokens);
+
+      //   type Func = { var: Var; body: Expr };
+
+      return {
+        var: nameToken.value,
+        body: expression,
+      };
+    }
+    case TokenType.IDENTIFIER: {
+      return consume(tokens, TokenType.IDENTIFIER).value;
+    }
+    case TokenType.LPAREN: {
+      consume(tokens, TokenType.LPAREN).value;
+      let depth = 1;
+      const subExpression: Token[] = [];
+      while (depth > 0) {
+        console.log("sdffsd", depth, subExpression);
+        if (tokens.length === 0) throw "Mismatched parentheses error";
+        const { type } = tokens[0];
+        if (type === TokenType.LPAREN) {
+          depth++;
+        } else if (type === TokenType.RPAREN) {
+          depth--;
+        }
+        subExpression.push(consume(tokens, type));
+      }
+      subExpression.pop(); // Getting rid of trailing rparen
+      return parseExpr(subExpression);
+    }
+  }
+  throw `unexpected token: ${JSON.stringify(tokens[0])}`;
+}
+// const sample = "A \\ x . A B \\ y . y";
+const sample =
+  "\\ f .(f(( (\\ a . b)(snd (re transform abc )) (succ ( snd (ed transform abc ) )) )f x))";
+console.log("parsing: ", sample);
+console.log("result", JSON.stringify(parseExpr(lex(sample))));
