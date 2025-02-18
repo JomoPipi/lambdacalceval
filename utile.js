@@ -1,50 +1,51 @@
-'use strict'
-
-
-
-
-
-
-
+// @ts-nocheck
+"use strict";
 
 function matchedParenthesis(exp) {
-    return ![...exp].reduce((a,v) => a < 0 ? a : a + ({'(':1,')':-1}[v]||0),0)
+  return ![...exp].reduce(
+    (a, v) => (a < 0 ? a : a + ({ "(": 1, ")": -1 }[v] || 0)),
+    0
+  );
 }
 
 function equivFormat(x, nf) {
-    const i = x.indexOf(λ)
+  const i = x.indexOf(λ);
 
-    if (i === 0) {
-        const i = x.indexOf('.')
-        const params = x.slice(1,i).trim().split` `
-        return equivFormat(params.reduce(a => applyAB(a, nf(), new Set()), x), nf)
-    }
-    if (i < 0)
-        return x
+  if (i === 0) {
+    const i = x.indexOf(".");
+    const params = x.slice(1, i).trim().split` `;
+    return equivFormat(
+      params.reduce((a) => applyAB(a, nf(), new Set()), x),
+      nf
+    );
+  }
+  if (i < 0) return x;
 
-    const terms = getTerms(x)
-    return terms.length === 1 ? 
-        terms[0][0] === λ ? equivFormat(terms[0], nf) : terms[0] : 
-        gatherTerms(terms.map(x => equivFormat(x, nf)))
-
+  const terms = getTerms(x);
+  return terms.length === 1
+    ? terms[0][0] === λ
+      ? equivFormat(terms[0], nf)
+      : terms[0]
+    : gatherTerms(terms.map((x) => equivFormat(x, nf)));
 }
 //   SLOW
-function isEquiv(a,b) {
-    const ab = a + b, setA = new Set(ab), setB = new Set(ab)
-    const nfa = makeNextFreeVarFunc(setA)
-    const nfb = makeNextFreeVarFunc(setB)
-    if (a.length!==b.length) return false
-    for (let i = 0; i < a.length; i++)
-        if ('().λ'.includes(a[i]) && a[i] !== b[i])
-            return false
-    if (equivFormat(a,nfa) !== equivFormat(b,nfb)) return false
-    return setA.size === setB.size
+function isEquiv(a, b) {
+  const ab = a + b,
+    setA = new Set(ab),
+    setB = new Set(ab);
+  const nfa = makeNextFreeVarFunc(setA);
+  const nfb = makeNextFreeVarFunc(setB);
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++)
+    if ("().λ".includes(a[i]) && a[i] !== b[i]) return false;
+  if (equivFormat(a, nfa) !== equivFormat(b, nfb)) return false;
+  return setA.size === setB.size;
 }
 
 // function isEquiv(a,b) {
 //     // a and b are in normal form
 //     const nf = makeNextFreeVarFunc(new Set(a + b))
-    
+
 //     const [i,j] = [a,b].map(x=>x.indexOf(λ))
 //     if (i !== j) return false
 //     if (i < 0) {
@@ -55,159 +56,109 @@ function isEquiv(a,b) {
 //         if (x !== y) return false
 //         const pA = a.slice(1,x).trim().split` `
 //         const pB = b.slice(1,y).trim().split` `
-//         return isEquiv(pA.reduce(a => applyAB(a, z, new Set()), a), 
+//         return isEquiv(pA.reduce(a => applyAB(a, z, new Set()), a),
 //                        pB.reduce(a => applyAB(a, z, new Set()), b))
 //     }
-
 
 //     const terms = getTerms(a)
 //     const termsB = getTerms(b)
 //     if (terms.length !== termsB.length) return false
-//     return terms.length === 1 ? 
-//         terms[0][0] === λ ? isEquiv(terms[0], termsB[0]) : terms[0] === termsB[0] : 
+//     return terms.length === 1 ?
+//         terms[0][0] === λ ? isEquiv(terms[0], termsB[0]) : terms[0] === termsB[0] :
 //         terms.every((x,i) => isEquiv(x, termsB[i]))
 // }
 
+function replaceWith(str, find, replacement) {
+  for (let i = 0; str[i]; i++)
+    if (str.startsWith(find, i))
+      str = str.slice(0, i) + replacement + str.slice(i + find.length);
 
-
-
-
-
-
-
-function replaceWith(str,find,replacement) { 
-    for (let i = 0; str[i]; i++) 
-        if (str.startsWith(find,i)) 
-            str = str.slice(0,i) + replacement + str.slice(i + find.length)
-
-    return str
+  return str;
 }
-
-
-
-
-
-
-
 
 function dim(x, a) {
-    const space = 180
-    const y = x.length
-    const z = space/2 > a ? space/2 - a : 0
-    // if (y > z) x = x.slice(0, z) + '  ... ' + x.slice(y - z)
-    return `<span class="dim" style="color:#777;"> ${x} </span>`
+  const space = 180;
+  const y = x.length;
+  const z = space / 2 > a ? space / 2 - a : 0;
+  // if (y > z) x = x.slice(0, z) + '  ... ' + x.slice(y - z)
+  return `<span class="dim" style="color:#777;"> ${x} </span>`;
 }
 
-
-
-
-
-
-
-
-function clearIt (obj) {
-    for (const i in obj)
-        delete obj[i]
+function clearIt(obj) {
+  for (const i in obj) delete obj[i];
 }
 
-
-
-
-
-
-
-
-function escapeHTML(x) { 
-    // this works because I replace the user's default <> symbols to unicode versions.
-    return x.split(/\<.*?\>/).join`` 
+function escapeHTML(x) {
+  // this works because I replace the user's default <> symbols to unicode versions.
+  return x.split(/\<.*?\>/).join``;
 }
-
-
-
-
-
-
-
 
 function updateHistory(exp, then) {
-    const hstry = HISTORY.map(escapeHTML)
-    const l = hstry.length
-    for (var i = l-1, limit = Math.max(1,l-10); ; i--) {
-        if (i <= limit) { i = null; break }
-        const v = hstry[i]
-        if (tokenize(finalStep(v)).every((x,j) => tokenize(exp)[j] === x))
-            break;
+  const hstry = HISTORY.map(escapeHTML);
+  const l = hstry.length;
+  for (var i = l - 1, limit = Math.max(1, l - 10); ; i--) {
+    if (i <= limit) {
+      i = null;
+      break;
     }
-    if (i) HISTORY.splice(i, Infinity)  // we don't need to see any steps that happen after we get the result)
-    
-    const finalResultAndStats = exp +           // enjoy some nice measurements
-    '<br> <br> <br> <span style="display: inline-block; text-align:left; font-size: 1.5em;">' + 
-    'Reduction steps:            ' + hstry.length +
-    '<br> Number of tokens:      ' + hstry.reduce((a,v) => a + tokenize(v).length, 0) +
-    '<br> Number of characters:  ' + hstry.reduce((a,v) => a + v.replace(/ /g,'').length, 0) +
-    '<br> Calculation duration:  ' + (Date.now() - then) + 'ms </span>'
+    const v = hstry[i];
+    if (tokenize(finalStep(v)).every((x, j) => tokenize(exp)[j] === x)) break;
+  }
+  if (i) HISTORY.splice(i, Infinity); // we don't need to see any steps that happen after we get the result)
 
-    HISTORY.push(finalResultAndStats)
+  const finalResultAndStats =
+    exp + // enjoy some nice measurements
+    '<br> <br> <br> <span style="display: inline-block; text-align:left; font-size: 1.5em;">' +
+    "Reduction steps:            " +
+    hstry.length +
+    "<br> Number of tokens:      " +
+    hstry.reduce((a, v) => a + tokenize(v).length, 0) +
+    "<br> Number of characters:  " +
+    hstry.reduce((a, v) => a + v.replace(/ /g, "").length, 0) +
+    "<br> Calculation duration:  " +
+    (Date.now() - then) +
+    "ms </span>";
 
-    D('steps').innerHTML = '<br>' + HISTORY.join`<br><br>` + '<br><br>'
+  HISTORY.push(finalResultAndStats);
+
+  D("steps").innerHTML = "<br>" + HISTORY.join`<br><br>` + "<br><br>";
 }
 
+function alphaEquivalent(a, b) {
+  log("now testing for equivalence: " + a + "   and   " + b);
 
+  if (a.length !== b.length) return alert("the lengths are not equal");
 
+  if ([...a].some((c, i) => "λ.()".includes(c) && c !== b[i]))
+    return alert("some lambdas or parentheses or dots are in the wrong place");
 
-
-
-
-
-
-function alphaEquivalent(a,b) {
-
-    log('now testing for equivalence: '+a+'   and   '+b)
-
-    
-    if (a.length !== b.length) 
-        return alert('the lengths are not equal')
-
-    if ([...a].some((c,i) => 'λ.()'.includes(c) && c !== b[i])) 
-        return alert('some lambdas or parentheses or dots are in the wrong place')
-        
-    log('isEquiv a b',isEquiv(a,b))
-    return isEquiv(a,b) || alert('results are not alpha equivalent')
+  log("isEquiv a b", isEquiv(a, b));
+  return isEquiv(a, b) || alert("results are not alpha equivalent");
 }
-
-
-
-
-
-
-
 
 function stripUselessParentheses(t) {
-    // strip away unnecessary parenthesis
-    t = t.trim()
-    while (true) {
-        const i = [...t].findIndex((v,j) => v==='(' && t[j+2] === ')')
-        if (i >= 0) {
-            t = (t.slice(0,i) + ' ' + t[i+1] + ' ' + t.slice(i+3)).trim()
-            continue
-        }
-        if (t[0]==='(') {
-            for(let i=1,x=1; t[i]; i++) {
-                x += t[i] === '(' ?  1 : t[i] === ')' ? -1 : 0
-                if (!x && t[i+1]) return t
-            }
-            t = (t.slice(1,-1)).trim()
-            continue
-        }
-        return t
+  // strip away unnecessary parenthesis
+  t = t.trim();
+  while (true) {
+    const i = [...t].findIndex((v, j) => v === "(" && t[j + 2] === ")");
+    if (i >= 0) {
+      t = (t.slice(0, i) + " " + t[i + 1] + " " + t.slice(i + 3)).trim();
+      continue;
     }
+    if (t[0] === "(") {
+      for (let i = 1, x = 1; t[i]; i++) {
+        x += t[i] === "(" ? 1 : t[i] === ")" ? -1 : 0;
+        if (!x && t[i + 1]) return t;
+      }
+      t = t.slice(1, -1).trim();
+      continue;
+    }
+    return t;
+  }
 }
 
-
-
-
 // function equivFormat(x, y=0) {
-    
+
 //     if (x[0] === λ) {
 //         const i = x.indexOf('.')
 //         const params = x.slice(1,i).trim().split` ` // this is safe because numbers are never in params
@@ -217,12 +168,11 @@ function stripUselessParentheses(t) {
 //     }
 
 //     const terms = getTerms(x)
-//     return terms.length === 1 ? 
-//         terms[0][0] === λ ? equivFormat(terms[0], y) : terms[0] : 
+//     return terms.length === 1 ?
+//         terms[0][0] === λ ? equivFormat(terms[0], y) : terms[0] :
 //         gatherTerms(terms.map((x,i) => equivFormat(x, y + 42*(i+1))))
 
 // }
-
 
 // function isEquiv(a,b) {
 //     // checks two non divergent lambda expressions for equivalence
@@ -242,7 +192,7 @@ function stripUselessParentheses(t) {
 //                 a = applyAB(a,x)
 //                 b = applyAB(b,x)
 //                 continue
-//             }    
+//             }
 //             else {
 //                 if (bi === 0) return false
 //                 const fronta = a.slice(0,ai), frontb = b.slice(0,bi)
@@ -255,24 +205,14 @@ function stripUselessParentheses(t) {
 //             }
 //         }
 
-        
-        
-        
 //     }
 //     return a === b
 // }
-
-
-
-
 
 // id = λx.x
 // @ = λf g x.f(g x)
 // @_ = λf g x y.f(g x y)
 // Y = λy.(λx.y(x x))(λx.y(x x))
-
-
-
 
 // -- Bool
 // -- "the basic observation
@@ -292,9 +232,6 @@ function stripUselessParentheses(t) {
 // xor = λa b.a (not b) b
 // beq = @_ not xor
 
-
-
-
 // -- e -˃ e -˃ Pair
 // pair = λa b s.s a b
 
@@ -305,8 +242,6 @@ function stripUselessParentheses(t) {
 // -- Pair -˃ Pair
 // -- TR =[a,b]-˃[b,b+1]
 // TR = λp.pair(snd p)(+1(snd p))
-
-
 
 // -- What really are numbers?
 // -- They are extensions of concepts
@@ -333,7 +268,6 @@ function stripUselessParentheses(t) {
 // 18 = +1 17
 // 19 = +1 18
 // 20 = +1 19
-
 
 // -- Int
 // 0' = pos 0
@@ -398,7 +332,6 @@ function stripUselessParentheses(t) {
 // √ = λ n . Y √% n 1
 // factorial = λn. Y (λf n.==0 n 1 (* n (f(-1 n)))) n
 
-
 // -- Nat -˃ Nat -˃ Nat
 // + = λa.a +1
 // - = λa b.b -1 a
@@ -460,7 +393,6 @@ function stripUselessParentheses(t) {
 
 // -- #################################################################################################################################################################################################
 
-
 // -- Int -˃ Int -˃ Int
 // add = λa b.(λsA sB A B.
 //     pair (˃ A B sA sB) (beq sA sB + - (max A B) (min A B))
@@ -487,7 +419,6 @@ function stripUselessParentheses(t) {
 // -- div -17' -4' -- 4'
 // -- div 3' -0' -- some sort of error
 
-
 // --$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ OLD WAY OF FRACS -- pair Int Int $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 // -- TODO: REDO FRACTIONS AS (Bool,(Nat,Nat))
 // -- -- Int -˃ Int -˃ Frac
@@ -495,7 +426,7 @@ function stripUselessParentheses(t) {
 // --       pair (beq(signum n)(signum d)pos neg N) (pos D)
 // --     )(fst ND)(snd ND)
 // --   )(simplify(abs n)(abs d))
- 
+
 // -- -- Frac -˃ Frac
 // -- reciprocal = λf.pair(snd f)(fst f)
 
@@ -526,22 +457,19 @@ function stripUselessParentheses(t) {
 // -- subFracs = λ a b . addFracs a (pair (negate(fst b)) (snd b))
 // --$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-
-
 // -- frac :: (Bool,(Nat,Nat))
 // -- Int -˃ Int -˃ Frac
 // fracFromInts = λn d.(λND.(λ N D.
 //       pair (beq(signum n)(signum d)true false) (pair N D)
 //     )(fst ND)(snd ND)
 //   )(simplify(abs n)(abs d))
- 
 
 // -- Bool -˃ Nat -˃ Nat -˃ Frac
 // frac = λsign n d.(λND.(λ N D.
 //       pair sign (pair N D)
 //     )(fst ND)(snd ND)
 //   )(simplify n d)
- 
+
 // -- Frac -˃ Frac
 // reciprocal = λf.pair (signum f) (pair(snd (abs f))(fst (abs f)))
 
@@ -576,12 +504,6 @@ function stripUselessParentheses(t) {
 // -- subFracs 1/3 1/2 -- -1/6
 // -- - (factorial 4) 4 -- 20
 
-
-
-
-
-
-
 // -- List
 // null = pair true _
 
@@ -608,7 +530,6 @@ function stripUselessParentheses(t) {
 // filter = λf list . reverse(Y (λr l res.==null l res (r (tail l) (f(head l) ([] (head l) res) res))) list null)
 // reduce    = λf list acc . Y (λr l a.==null l a (r (tail l) (f a (head l)))) list acc
 // reduceIdx = λf list acc . Y (λr l a i.==null l a (r (tail l) (f a (head l) i) (+1 i))) list acc 0
-
 
 // -- List -˃ List -˃ List
 // concat = λ a b . reverse(Y(λcnc res b.==null b res (cnc ([] (head b) res) (tail b))) (reverse a) b)
@@ -651,13 +572,11 @@ function stripUselessParentheses(t) {
 // -- reduce add (map neg (range 6)) 0' -- -15'
 // mapIdx (λx i.* 2 (+ 3 i)) ([] _ ([] _ ([] _ null))) -- [6,8,10]
 
-
 // -- TYPES:
 // -*
 // Dec8 (8-bit positive decimal)
 // Nat8 (8-bit natural number)
 // Number (16-bit floating point number)
 // *-
-
 
 // -- Number
