@@ -137,9 +137,9 @@ function alphaEquivalent(a, b) {
 }
 
 function stripUselessParentheses(t) {
-  // strip away unnecessary parenthesis
-  t = t.trim();
+  // strip away unnecessary parentheses
   while (true) {
+    t = t.trim();
     const i = [...t].findIndex((v, j) => v === "(" && t[j + 2] === ")");
     if (i >= 0) {
       t = (t.slice(0, i) + " " + t[i + 1] + " " + t.slice(i + 3)).trim();
@@ -148,7 +148,11 @@ function stripUselessParentheses(t) {
     if (t[0] === "(") {
       for (let i = 1, x = 1; t[i]; i++) {
         x += t[i] === "(" ? 1 : t[i] === ")" ? -1 : 0;
-        if (!x && t[i + 1]) return t;
+        if (!x && t[i + 1]) {
+          // return t;
+          if (t.slice(1, i).includes(λ)) return t;
+          return t.slice(1, i) + " " + t.slice(i + 1);
+        }
       }
       t = t.slice(1, -1).trim();
       continue;

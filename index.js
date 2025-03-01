@@ -292,7 +292,7 @@ function gatherTerms(terms) {
 function makeNextFreeVarFunc(allvars) {
   return function () {
     for (let i = allvars.last || 97; ; i++) {
-      if (i === 127) continue;
+      if (i >= 133 && i <= 200) continue;
       const v = String.fromCharCode(i);
       if (!allvars.has(v)) {
         allvars.last = i + 1;
